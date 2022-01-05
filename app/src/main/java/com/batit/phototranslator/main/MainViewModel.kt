@@ -1,48 +1,37 @@
-/*
- * Copyright 2020 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
-
 package com.batit.phototranslator.main
 
 import android.app.Application
+import android.os.AsyncTask.execute
 import android.os.Handler
 import android.util.LruCache
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
+import com.batit.phototranslator.main.MainFragment.Companion.DESIRED_HEIGHT_CROP_PERCENT
+import com.batit.phototranslator.main.MainFragment.Companion.DESIRED_WIDTH_CROP_PERCENT
 import com.batit.phototranslator.util.Language
 import com.batit.phototranslator.util.ResultOrError
 import com.batit.phototranslator.util.SmoothedMutableLiveData
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
+import com.google.api.detect.Detect.execute
+import com.google.api.translate.Translate
+import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.TranslateLanguage.ENGLISH
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
-import com.batit.phototranslator.main.MainFragment.Companion.DESIRED_HEIGHT_CROP_PERCENT
-import com.batit.phototranslator.main.MainFragment.Companion.DESIRED_WIDTH_CROP_PERCENT
-import com.google.mlkit.nl.languageid.LanguageIdentification
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO Instantiate LanguageIdentification
     val targetLang = MutableLiveData<Language>()
     val sourceText = SmoothedMutableLiveData<String>(SMOOTHING_DURATION)
+    val language: MutableLiveData<String> = MutableLiveData()
+    val translatedTextLiveData: MutableLiveData<String> = MutableLiveData()
 
     private val languageIdentification = LanguageIdentification.getClient()
 
@@ -85,8 +74,40 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         result
     }
 
+    fun getSourceLang(text: String) {
+        languageIdentification.identifyLanguage(text)
+            .addOnSuccessListener {
+                if (it != "und")
+                    language.value = it
+            }
+    }
+
     override fun onCleared() {
         // TODO Shut down ML Kit clients.
+    }
+
+    fun translate(text: String, target: String, source: String) {
+        val options = TranslatorOptions.Builder()
+            .setSourceLanguage(source)
+            .setTargetLanguage(target)
+            .build()
+        val translator = translators[options]
+        modelDownloading.setValue(true)
+
+        // Register watchdog to unblock long running downloads
+        Handler().postDelayed({ modelDownloading.setValue(false) }, 15000)
+        modelDownloadTask = translator.downloadModelIfNeeded().addOnCompleteListener {
+            modelDownloading.setValue(false)
+        }
+        translating.value = true
+//        return
+        modelDownloadTask.onSuccessTask {
+            translator.translate(text).addOnCompleteListener {
+                translatedTextLiveData.value = it.result
+            }
+        }.addOnCompleteListener {
+            translating.value = false
+        }
     }
 
     private fun translate(): Task<String> {

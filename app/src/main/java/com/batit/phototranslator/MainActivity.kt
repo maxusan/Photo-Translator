@@ -17,20 +17,17 @@
 
 package com.batit.phototranslator
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.batit.phototranslator.main.MainFragment
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import com.batit.phototranslator.main.MainViewModel
 
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
-                .commitNow()
-        }
     }
-
 }
