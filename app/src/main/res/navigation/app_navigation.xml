@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/app_navigation"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.batit.phototranslator.main.MainFragment"
+        android:label="MainFragment"
+        tools:layout="@layout/main_fragment">
+        <action
+            android:id="@+id/action_mainFragment_to_translatePhotoFragment"
+            app:destination="@id/translatePhotoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/translatePhotoFragment"
+        android:name="com.batit.phototranslator.photo.TranslatePhotoFragment"
+        android:label="TranslatePhotoFragment"
+        tools:layout="@layout/fragment_translate_photo"/>
+</navigation>
