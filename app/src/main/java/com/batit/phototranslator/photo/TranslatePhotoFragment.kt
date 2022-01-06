@@ -1,11 +1,13 @@
 package com.batit.phototranslator.photo
 
+import android.Manifest
 import android.R
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
@@ -21,10 +24,10 @@ import androidx.fragment.app.activityViewModels
 import com.batit.phototranslator.CustomView
 import com.batit.phototranslator.databinding.FragmentTranslatePhotoBinding
 import com.batit.phototranslator.main.MainViewModel
-import com.batit.phototranslator.util.Language
-import com.batit.phototranslator.util.PathUtil
+import com.batit.phototranslator.util.*
 import com.bumptech.glide.Glide
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.android.synthetic.main.fragment_translate_photo.view.*
@@ -39,6 +42,7 @@ class TranslatePhotoFragment : Fragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private var imageHeight: Int = 0
     private var imageWidth: Int = 0
+    val array = ArrayList<Text.Line>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,7 +77,7 @@ class TranslatePhotoFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
         binding.targetLangSelector.adapter = adapter
-        binding.targetLangSelector.setSelection(adapter.getPosition(Language("en")))
+        binding.targetLangSelector.setSelection(adapter.getPosition(Language("ru")))
     }
 
     private fun observeEvents() {
@@ -81,15 +85,26 @@ class TranslatePhotoFragment : Fragment() {
             binding.sourceLanguageTextView.text = it
         }
         binding.translateButton.setOnClickListener {
-            translate(binding.sourceTextView.text.toString(), binding.sourceLanguageTextView.text.toString(), viewModel.targetLang.value!!.code)
-
+//            array.forEach {
+                translate(array, binding.sourceLanguageTextView.text.toString(), viewModel.targetLang.value!!.code)
+//            }
         }
         viewModel.translatedTextLiveData.observe(viewLifecycleOwner){
+            Log.e("logs", it)
             binding.translatedText.text = it
-//            val bmp = textAsBitmap(binding.translatedText.text.toString(), 14f, Color.BLACK)
-//            bmp
-//            val bmp2 = createBitmapFromView(binding.translatedText, binding.selectedPictureContainer.width, binding.selectedPictureContainer.height)
-//            bmp2
+        }
+        viewModel.translatedLines.observe(viewLifecycleOwner){
+            Log.e("log", it.toString())
+            binding.selectedPictureContainer.tr = it
+        }
+        binding.saveTranslateButton.setOnClickListener {
+            requireContext().checkPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE){
+                if(it){
+                    binding.selectedPictureContainer.saveTranslationToGallery()
+                }else{
+                    Toast.makeText(requireContext(), "Permissions not granted", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
     }
@@ -115,7 +130,7 @@ class TranslatePhotoFragment : Fragment() {
         resultLauncher.launch(intent)
     }
 
-    private fun translate(sourceText: String, sourceCode: String, targetCode: String){
+    private fun translate(sourceText: ArrayList<Text.Line>, sourceCode: String, targetCode: String){
        viewModel.translate(sourceText, targetCode, sourceCode)
     }
 
@@ -129,30 +144,28 @@ class TranslatePhotoFragment : Fragment() {
                 val imageStream = requireContext().contentResolver.openInputStream(data)
 
                 val pickedImage = BitmapFactory.decodeStream(imageStream)
-//                val exifInterface = ExifInterface(PathUtil.getPath(requireContext(), data))
-//                val degree = exifInterface.getAttribute(ExifInterface.TAG_ORIENTATION)?.toInt()
                 imageHeight = pickedImage.height
                 imageWidth = pickedImage.width
-
-
-                val inputImage = InputImage.fromFilePath(requireContext(), data)
-                val image = inputImage.bitmapInternal
+                val inputImage = InputImage.fromBitmap(pickedImage, 0)
+//                val bmm = inputImage.bitmapInternal
+//                val bmp = ImageUtils.convertYuv420888ImageToBitmap(inputImage.mediaImage)
                 Glide.with(requireContext()).load(inputImage.bitmapInternal)
                     .into(binding.selectedPictureContainer)
-
-
-//                Log.e("logs", inputImage.)
-//                Log.e("logs", inputImage.)
-//                Log.e("logs", inputImage.)
-//                Log.e("logs", inputImage.)
                 detector.process(inputImage)
                     .addOnSuccessListener { visionText ->
                         binding.sourceTextView.text = visionText.text
-                        val array = visionText.text.split("\n")
-                        array.forEach {
-                            Log.e("logs", it)
+
+                        visionText.textBlocks.forEach {
+                            it.lines.forEach {
+                                array.add(it)
+//                                translate(it.text, binding.sourceLanguageTextView.text.toString(), viewModel.targetLang.value!!.code)
+                            }
                         }
-                        binding.selectedPictureContainer.rw = visionText.textBlocks
+                        array.forEach {
+                            Log.e("logs", it.text)
+//                            translate(it.text, binding.sourceLanguageTextView.text.toString(), viewModel.targetLang.value!!.code)
+                        }
+                        binding.selectedPictureContainer.rw = array
                         viewModel.getSourceLang(visionText.text)
                     }
                     .addOnFailureListener { exception ->

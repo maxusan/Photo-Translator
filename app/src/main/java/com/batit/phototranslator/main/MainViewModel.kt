@@ -3,6 +3,7 @@ package com.batit.phototranslator.main
 import android.app.Application
 import android.os.AsyncTask.execute
 import android.os.Handler
+import android.util.Log
 import android.util.LruCache
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MediatorLiveData
@@ -24,6 +25,7 @@ import com.google.mlkit.nl.translate.TranslateLanguage.ENGLISH
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
+import com.google.mlkit.vision.text.Text
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -45,6 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val translatedText = MediatorLiveData<ResultOrError>()
     private val translating = MutableLiveData<Boolean>()
     val modelDownloading = SmoothedMutableLiveData<Boolean>(SMOOTHING_DURATION)
+    val translatedLines = MutableLiveData<ArrayList<String>>()
 
     private var modelDownloadTask: Task<Void> = Tasks.forCanceled()
 
@@ -86,7 +89,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // TODO Shut down ML Kit clients.
     }
 
-    fun translate(text: String, target: String, source: String) {
+    fun translate(text: ArrayList<Text.Line>, target: String, source: String) {
+        val tempList = arrayListOf<String>()
         val options = TranslatorOptions.Builder()
             .setSourceLanguage(source)
             .setTargetLanguage(target)
@@ -95,19 +99,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         modelDownloading.setValue(true)
 
         // Register watchdog to unblock long running downloads
-        Handler().postDelayed({ modelDownloading.setValue(false) }, 15000)
-        modelDownloadTask = translator.downloadModelIfNeeded().addOnCompleteListener {
-            modelDownloading.setValue(false)
-        }
-        translating.value = true
-//        return
-        modelDownloadTask.onSuccessTask {
-            translator.translate(text).addOnCompleteListener {
-                translatedTextLiveData.value = it.result
+        text.forEachIndexed { index, line ->
+            Handler().postDelayed({ modelDownloading.setValue(false) }, 15000)
+            modelDownloadTask = translator.downloadModelIfNeeded().addOnCompleteListener {
+                modelDownloading.setValue(false)
             }
-        }.addOnCompleteListener {
-            translating.value = false
+            translating.value = true
+//        return
+            modelDownloadTask.onSuccessTask {
+                translator.translate(line.text).addOnCompleteListener {
+                    Log.e("logs", it.result)
+                    tempList.add(it.result)
+//                    translatedTextLiveData.value = it.result
+                }
+            }.addOnCompleteListener {
+                translating.value = false
+                if(text.size - 1 == index){
+                    translatedLines.value = tempList
+                }
+            }
         }
+
+
     }
 
     private fun translate(): Task<String> {
