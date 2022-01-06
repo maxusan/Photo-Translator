@@ -17,14 +17,23 @@
             android:background="#ffffff"
             android:padding="8dp">
 
-            <ImageView
+            <com.batit.phototranslator.CustomView
                 android:id="@+id/selectedPictureContainer"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1:1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:scaleType="fitXY"/>
+
+<!--            <com.batit.phototranslator.CustomView-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="0dp"-->
+<!--                app:layout_constraintStart_toStartOf="@id/selectedPictureContainer"-->
+<!--                app:layout_constraintTop_toTopOf="@id/selectedPictureContainer"-->
+<!--                app:layout_constraintEnd_toEndOf="@id/selectedPictureContainer"-->
+<!--                app:layout_constraintBottom_toBottomOf="@id/selectedPictureContainer"-->
+<!--                android:id="@+id/rect"/>-->
 
             <TextView
                 android:id="@+id/sourceLanguageTextView"

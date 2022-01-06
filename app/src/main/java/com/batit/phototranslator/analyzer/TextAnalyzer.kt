@@ -14,6 +14,7 @@ import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.lang.Exception
 
 class TextAnalyzer(
@@ -24,7 +25,7 @@ class TextAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
     // TODO: Instantiate TextRecognition detector
-    private val detector = TextRecognition.getClient()
+    private val detector = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     // TODO: Add lifecycle observer to properly close ML Kit detectors
 
     @androidx.camera.core.ExperimentalGetImage
