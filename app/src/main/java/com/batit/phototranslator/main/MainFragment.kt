@@ -52,10 +52,6 @@ import com.batit.phototranslator.R
 import com.batit.phototranslator.analyzer.TextAnalyzer
 import com.batit.phototranslator.util.Language
 import com.batit.phototranslator.util.ScopedExecutor
-import com.google.android.gms.common.internal.ConnectionErrorMessages.getErrorMessage
-import com.google.android.material.snackbar.Snackbar
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -291,46 +287,51 @@ class MainFragment : Fragment() {
         heightCropPercent: Int,
         widthCropPercent: Int
     ) {
-        val canvas = holder.lockCanvas()
-        val bgPaint = Paint().apply {
-            alpha = 140
+        try{
+            val canvas = holder.lockCanvas()
+            val bgPaint = Paint().apply {
+                alpha = 140
+            }
+            canvas.drawPaint(bgPaint)
+            val rectPaint = Paint()
+            rectPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+            rectPaint.style = Paint.Style.FILL
+            rectPaint.color = Color.WHITE
+            val outlinePaint = Paint()
+            outlinePaint.style = Paint.Style.STROKE
+            outlinePaint.color = Color.WHITE
+            outlinePaint.strokeWidth = 4f
+            val surfaceWidth = holder.surfaceFrame.width()
+            val surfaceHeight = holder.surfaceFrame.height()
+
+            val cornerRadius = 25f
+            // Set rect centered in frame
+            val rectTop = surfaceHeight * heightCropPercent / 2 / 100f
+            val rectLeft = surfaceWidth * widthCropPercent / 2 / 100f
+            val rectRight = surfaceWidth * (1 - widthCropPercent / 2 / 100f)
+            val rectBottom = surfaceHeight * (1 - heightCropPercent / 2 / 100f)
+            val rect = RectF(rectLeft, rectTop, rectRight, rectBottom)
+            canvas.drawRoundRect(
+                rect, cornerRadius, cornerRadius, rectPaint
+            )
+            canvas.drawRoundRect(
+                rect, cornerRadius, cornerRadius, outlinePaint
+            )
+            val textPaint = Paint()
+            textPaint.color = Color.WHITE
+            textPaint.textSize = 50F
+
+            val overlayText = getString(R.string.overlay_help)
+            val textBounds = Rect()
+            textPaint.getTextBounds(overlayText, 0, overlayText.length, textBounds)
+            val textX = (surfaceWidth - textBounds.width()) / 2f
+            val textY = rectBottom + textBounds.height() + 15f // put text below rect and 15f padding
+            canvas.drawText(getString(R.string.overlay_help), textX, textY, textPaint)
+            holder.unlockCanvasAndPost(canvas)
+        }catch (e: Exception){
+            e.printStackTrace()
         }
-        canvas.drawPaint(bgPaint)
-        val rectPaint = Paint()
-        rectPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-        rectPaint.style = Paint.Style.FILL
-        rectPaint.color = Color.WHITE
-        val outlinePaint = Paint()
-        outlinePaint.style = Paint.Style.STROKE
-        outlinePaint.color = Color.WHITE
-        outlinePaint.strokeWidth = 4f
-        val surfaceWidth = holder.surfaceFrame.width()
-        val surfaceHeight = holder.surfaceFrame.height()
 
-        val cornerRadius = 25f
-        // Set rect centered in frame
-        val rectTop = surfaceHeight * heightCropPercent / 2 / 100f
-        val rectLeft = surfaceWidth * widthCropPercent / 2 / 100f
-        val rectRight = surfaceWidth * (1 - widthCropPercent / 2 / 100f)
-        val rectBottom = surfaceHeight * (1 - heightCropPercent / 2 / 100f)
-        val rect = RectF(rectLeft, rectTop, rectRight, rectBottom)
-        canvas.drawRoundRect(
-            rect, cornerRadius, cornerRadius, rectPaint
-        )
-        canvas.drawRoundRect(
-            rect, cornerRadius, cornerRadius, outlinePaint
-        )
-        val textPaint = Paint()
-        textPaint.color = Color.WHITE
-        textPaint.textSize = 50F
-
-        val overlayText = getString(R.string.overlay_help)
-        val textBounds = Rect()
-        textPaint.getTextBounds(overlayText, 0, overlayText.length, textBounds)
-        val textX = (surfaceWidth - textBounds.width()) / 2f
-        val textY = rectBottom + textBounds.height() + 15f // put text below rect and 15f padding
-        canvas.drawText(getString(R.string.overlay_help), textX, textY, textPaint)
-        holder.unlockCanvasAndPost(canvas)
     }
 
     /**
