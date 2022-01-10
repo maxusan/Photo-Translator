@@ -24,9 +24,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:scaleType="fitXY"
-
-                />
+                android:scaleType="fitXY"/>
 
 <!--            <com.batit.phototranslator.CustomView-->
 <!--                android:layout_width="0dp"-->

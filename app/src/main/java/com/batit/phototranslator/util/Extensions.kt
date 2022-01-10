@@ -44,7 +44,7 @@ fun CustomView.saveTranslationToGallery(){
 }
 
 private const val SKINS_DIR = "Translator"
-val defaultDirectory = Environment.DIRECTORY_PICTURES + File.separator
+val defaultDirectory = Environment.DIRECTORY_DOWNLOADS + File.separator
 
 fun Bitmap.toFile(stream: OutputStream){
     compress(Bitmap.CompressFormat.PNG, 100, stream)

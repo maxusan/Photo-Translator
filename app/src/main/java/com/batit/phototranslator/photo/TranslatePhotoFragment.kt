@@ -6,9 +6,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.*
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.widget.AdapterView
@@ -21,12 +23,15 @@ import com.batit.phototranslator.databinding.FragmentTranslatePhotoBinding
 import com.batit.phototranslator.main.MainViewModel
 import com.batit.phototranslator.util.*
 import com.bumptech.glide.Glide
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import kotlinx.android.synthetic.main.fragment_translate_photo.view.*
 import kotlinx.android.synthetic.main.main_fragment.*
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 
 
 class TranslatePhotoFragment : Fragment() {
@@ -118,25 +123,32 @@ class TranslatePhotoFragment : Fragment() {
 
     }
 
-    private fun textAsBitmap(text: String?, textSize: Float, textColor: Int): Bitmap? {
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.textSize = textSize
-        paint.color = textColor
-        paint.textAlign = Paint.Align.LEFT
-        val baseline = -paint.ascent() // ascent() is negative
-        val width = (paint.measureText(text) + 0.5f).toInt() // round
-        val height = (baseline + paint.descent() + 0.5f).toInt()
-        val image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(image)
-        canvas.drawText(text!!, 0f, baseline, paint)
-        return image
-    }
+//    private fun textAsBitmap(text: String?, textSize: Float, textColor: Int): Bitmap? {
+//        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+//        paint.textSize = textSize
+//        paint.color = textColor
+//        paint.textAlign = Paint.Align.LEFT
+//        val baseline = -paint.ascent() // ascent() is negative
+//        val width = (paint.measureText(text) + 0.5f).toInt() // round
+//        val height = (baseline + paint.descent() + 0.5f).toInt()
+//        val image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        val canvas = Canvas(image)
+//        canvas.drawText(text!!, 0f, baseline, paint)
+//        return image
+//    }
 
     private fun startImagePicker() {
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
-        resultLauncher.launch(intent)
+//        val intent = Intent()
+//        intent.type = "image/*"
+//        intent.action = Intent.ACTION_GET_CONTENT
+//        resultLauncher.launch(intent)
+//        ImagePicker.with(this).galleryOnly().
+        ImagePicker.with(this)
+            .galleryOnly()
+            .crop()
+            .createIntent { intent ->
+                resultLauncher.launch(intent)
+            }
     }
 
     private fun translate(
@@ -154,26 +166,22 @@ class TranslatePhotoFragment : Fragment() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Uri = result.data?.data!!
                 val imageStream = requireContext().contentResolver.openInputStream(data)
+                var pickedImage = BitmapFactory.decodeStream(imageStream)
+
+//                Log.e("logs", "or " + or)
                 val wm = requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
                 val display: Display = wm.defaultDisplay
-
-
-                var pickedImage = BitmapFactory.decodeStream(imageStream)
                 imageHeight = pickedImage.height
                 imageWidth = pickedImage.width
-//                if(display.height.toFloat() < imageHeight){
+                if(display.height.toFloat() <= imageHeight){
 //                    val m = Matrix();
-//                    m.setRectToRect( RectF(0f, 0f, pickedImage.getWidth().toFloat(), pickedImage.getHeight().toFloat()),  RectF(0f, 0f,
-//                        (pickedImage.width * 0.95).toFloat(),    (pickedImage.height * 0.95).toFloat()), Matrix.ScaleToFit.CENTER);
-//                    pickedImage =  Bitmap.createBitmap(pickedImage, 0, 0, pickedImage.getWidth(), pickedImage.getHeight(), m, true)
-//                }
+                    pickedImage = Bitmap.createScaledBitmap(pickedImage,
+                        (pickedImage.width * 0.9).toInt(), (pickedImage.height*0.9).toInt(), true
+                    )
 
-//                val hC: Float = (display.height.toFloat() / height.toFloat())
-//                val wC: Float = (display.width.toFloat() / width.toFloat())
+                }
 
                 val inputImage = InputImage.fromBitmap(pickedImage, 0)
-//                val bmm = inputImage.bitmapInternal
-//                val bmp = ImageUtils.convertYuv420888ImageToBitmap(inputImage.mediaImage)
                 Glide.with(requireContext()).load(inputImage.bitmapInternal)
                     .into(binding.selectedPictureContainer)
                 detector.process(inputImage)
@@ -183,12 +191,7 @@ class TranslatePhotoFragment : Fragment() {
                         visionText.textBlocks.forEach {
                             it.lines.forEach {
                                 array.add(it)
-//                                translate(it.text, binding.sourceLanguageTextView.text.toString(), viewModel.targetLang.value!!.code)
                             }
-                        }
-                        array.forEach {
-                            Log.e("logs", it.text)
-//                            translate(it.text, binding.sourceLanguageTextView.text.toString(), viewModel.targetLang.value!!.code)
                         }
                         binding.selectedPictureContainer.rw = array
                         viewModel.getSourceLang(visionText.text)
@@ -199,6 +202,7 @@ class TranslatePhotoFragment : Fragment() {
                     }
             }
         }
+
 
 
 }

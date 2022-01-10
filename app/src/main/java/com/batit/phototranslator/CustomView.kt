@@ -28,6 +28,7 @@ class CustomView constructor(
             field = value
             invalidate()
         }
+
     var paint: Paint = Paint()
     var paint1: Paint = Paint()
 
@@ -61,7 +62,7 @@ class CustomView constructor(
 //                    style = Paint.Style.FILL
 //                    canvas.drawRect(line.boundingBox?.left!!.toFloat(), line.boundingBox?.top!!.toFloat(), line.boundingBox?.right!!.toFloat(),  line.boundingBox?.bottom!!.toFloat(), this)
 //                    }
-                if (wC > 1 && hC != 1f) {
+                if (wC > 1) {
                     ll.width = (this.width * wC).toInt()
                     ll.height = (this.height * wC).toInt()
                     line.boundingBox?.top = (line.boundingBox!!.top * wC ).toInt()
@@ -70,14 +71,33 @@ class CustomView constructor(
                     line.boundingBox?.bottom = (line.boundingBox!!.bottom * wC).toInt()
                     layoutParams = ll
                 }
-                if(hC >= 1){
-                    ll.height = (this.height /hC).toInt()
-                    line.boundingBox?.top = (line.boundingBox!!.top/ hC ).toInt()
-                    line.boundingBox?.left = (line.boundingBox!!.left / hC).toInt()
-                    line.boundingBox?.right = (line.boundingBox!!.right / hC).toInt()
-                    line.boundingBox?.bottom = (line.boundingBox!!.bottom / hC).toInt()
-                    layoutParams = ll
-                }
+//                if (wC > 1 && hC == 1f ) {
+//                    ll.width = (this.width * wC / 2).toInt()
+//                    ll.height = (this.height * wC / 2).toInt()
+//                    line.boundingBox?.top = (line.boundingBox!!.top * wC / 2).toInt()
+//                    line.boundingBox?.left = (line.boundingBox!!.left * wC / 2).toInt()
+//                    line.boundingBox?.right = (line.boundingBox!!.right * wC / 2).toInt()
+//                    line.boundingBox?.bottom = (line.boundingBox!!.bottom * wC/ 2).toInt()
+//                    layoutParams = ll
+//                }
+
+//                if(hC >= 1){
+//                    ll.width = (this.width /2).toInt()
+//                    ll.height = (this.height /2).toInt()
+//                    line.boundingBox?.top = (line.boundingBox!!.top /2).toInt()
+//                    line.boundingBox?.left = (line.boundingBox!!.left /2).toInt()
+//                    line.boundingBox?.right = (line.boundingBox!!.right /2).toInt()
+//                    line.boundingBox?.bottom = (line.boundingBox!!.bottom /2).toInt()
+//                    layoutParams = ll
+//                }
+//                if(hC >= 1){
+//                    ll.height = (this.height /hC).toInt()
+//                    line.boundingBox?.top = (line.boundingBox!!.top/ hC ).toInt()
+//                    line.boundingBox?.left = (line.boundingBox!!.left / hC).toInt()
+//                    line.boundingBox?.right = (line.boundingBox!!.right / hC).toInt()
+//                    line.boundingBox?.bottom = (line.boundingBox!!.bottom / hC).toInt()
+//                    layoutParams = ll
+//                }
                 Log.e("logs", line.boundingBox.toString())
 //                if (hC > 1f) {
 //                    ll.width = (this.width /2).toInt()

@@ -33,6 +33,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val targetLang = MutableLiveData<Language>()
     val sourceText = SmoothedMutableLiveData<String>(SMOOTHING_DURATION)
     val language: MutableLiveData<String> = MutableLiveData()
+    val staticLanguage: MutableLiveData<String> = MutableLiveData()
     val translatedTextLiveData: MutableLiveData<String> = MutableLiveData()
 
     private val languageIdentification = LanguageIdentification.getClient()
@@ -84,6 +85,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     language.value = it
             }
     }
+
+
 
     override fun onCleared() {
         // TODO Shut down ML Kit clients.
