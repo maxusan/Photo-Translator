@@ -1,4 +1,4 @@
-package com.batit.phototranslator.analyzer
+package com.batit.phototranslator.core.analyzer
 
 import android.content.Context
 import android.graphics.Rect
@@ -8,7 +8,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
-import com.batit.phototranslator.util.ImageUtils
+import com.batit.phototranslator.core.util.ImageUtils
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.common.InputImage

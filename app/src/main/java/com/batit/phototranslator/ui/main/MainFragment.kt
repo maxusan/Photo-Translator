@@ -15,16 +15,11 @@
  *
  */
 
-package com.batit.phototranslator.main
+package com.batit.phototranslator.ui.main
 
 import android.Manifest
-import android.app.Activity
-import android.app.AlertDialog
-import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.net.Uri
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -34,9 +29,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.core.Camera
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -45,13 +38,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.batit.phototranslator.R
-import com.batit.phototranslator.analyzer.TextAnalyzer
-import com.batit.phototranslator.util.Language
-import com.batit.phototranslator.util.ScopedExecutor
+import com.batit.phototranslator.core.analyzer.TextAnalyzer
+import com.batit.phototranslator.core.util.Language
+import com.batit.phototranslator.core.util.ScopedExecutor
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors

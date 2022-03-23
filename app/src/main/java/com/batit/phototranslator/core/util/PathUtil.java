@@ -1,4 +1,4 @@
-package com.batit.phototranslator.util;
+package com.batit.phototranslator.core.util;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

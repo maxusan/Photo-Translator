@@ -1,4 +1,4 @@
-package com.batit.phototranslator.util
+package com.batit.phototranslator.core.util
 
 import android.content.ContentValues
 import android.content.Context
@@ -8,7 +8,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import com.batit.phototranslator.CustomView
+import com.batit.phototranslator.core.CustomView
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken

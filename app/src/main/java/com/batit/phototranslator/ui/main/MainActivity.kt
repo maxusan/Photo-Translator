@@ -15,12 +15,12 @@
  *
  */
 
-package com.batit.phototranslator
+package com.batit.phototranslator.ui.main
 
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.batit.phototranslator.main.MainViewModel
+import com.batit.phototranslator.R
 
 class MainActivity : AppCompatActivity() {
 

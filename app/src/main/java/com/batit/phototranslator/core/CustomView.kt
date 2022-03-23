@@ -1,4 +1,4 @@
-package com.batit.phototranslator
+package com.batit.phototranslator.core
 
 import android.content.Context
 import android.graphics.Canvas
@@ -9,7 +9,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Display
 import android.view.WindowManager
-import com.google.mlkit.vision.text.Text
+import com.google.firebase.ml.vision.text.FirebaseVisionText
 
 
 class CustomView constructor(
@@ -18,7 +18,7 @@ class CustomView constructor(
 ) : androidx.appcompat.widget.AppCompatImageView(context, attributeSet) {
 
 
-    var rw: List<Text.Line>? = null
+    var rw: List<FirebaseVisionText.Line>? = null
         set(value) {
             field = value
             invalidate()
@@ -49,20 +49,22 @@ class CustomView constructor(
         val display: Display = wm.defaultDisplay
         val ll = layoutParams
         if (height != 0 && width != 0) {
-            val hC: Float = (display.height.toFloat() / height.toFloat())
-            val wC: Float = (display.width.toFloat() / width.toFloat())
+
 //            val q =
 //            val a =
             rw?.forEachIndexed { index, line ->
                 if (null == line.boundingBox)
                     return
+
+                val hC: Float = (display.height.toFloat() / height.toFloat())
+                val wC: Float = (display.width.toFloat() / width.toFloat())
 //                Paint().apply {
 //                    color = Color.RED
 //                    strokeWidth = 1f
 //                    style = Paint.Style.FILL
 //                    canvas.drawRect(line.boundingBox?.left!!.toFloat(), line.boundingBox?.top!!.toFloat(), line.boundingBox?.right!!.toFloat(),  line.boundingBox?.bottom!!.toFloat(), this)
 //                    }
-                if (wC > 1) {
+                if (wC > 1 && hC != 1f) {
                     ll.width = (this.width * wC).toInt()
                     ll.height = (this.height * wC).toInt()
                     line.boundingBox?.top = (line.boundingBox!!.top * wC ).toInt()

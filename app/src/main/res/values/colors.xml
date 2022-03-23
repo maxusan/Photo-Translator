@@ -3,4 +3,9 @@
         <color name="colorPrimary">#008577</color>
         <color name="colorPrimaryDark">#00574B</color>
         <color name="colorAccent">#D81B60</color>
+
+        <color name="ucrop_color_widget_active">@color/colorAccent</color>
+
+        <color name="main_bg_color">#ECF1FF</color>
+
 </resources>

@@ -1,7 +1,6 @@
-package com.batit.phototranslator.main
+package com.batit.phototranslator.ui.main
 
 import android.app.Application
-import android.os.AsyncTask.execute
 import android.os.Handler
 import android.util.Log
 import android.util.LruCache
@@ -9,23 +8,20 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import com.batit.phototranslator.main.MainFragment.Companion.DESIRED_HEIGHT_CROP_PERCENT
-import com.batit.phototranslator.main.MainFragment.Companion.DESIRED_WIDTH_CROP_PERCENT
-import com.batit.phototranslator.util.Language
-import com.batit.phototranslator.util.ResultOrError
-import com.batit.phototranslator.util.SmoothedMutableLiveData
+import com.batit.phototranslator.ui.main.MainFragment.Companion.DESIRED_HEIGHT_CROP_PERCENT
+import com.batit.phototranslator.ui.main.MainFragment.Companion.DESIRED_WIDTH_CROP_PERCENT
+import com.batit.phototranslator.core.util.Language
+import com.batit.phototranslator.core.util.ResultOrError
+import com.batit.phototranslator.core.util.SmoothedMutableLiveData
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.api.detect.Detect.execute
-import com.google.api.translate.Translate
+import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.TranslateLanguage
-import com.google.mlkit.nl.translate.TranslateLanguage.ENGLISH
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
-import com.google.mlkit.vision.text.Text
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -92,7 +88,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // TODO Shut down ML Kit clients.
     }
 
-    fun translate(text: ArrayList<Text.Line>, target: String, source: String) {
+    fun translate(text: ArrayList<FirebaseVisionText.Line>, target: String, source: String) {
         val tempList = arrayListOf<String>()
         val options = TranslatorOptions.Builder()
             .setSourceLanguage(source)

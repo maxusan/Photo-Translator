@@ -1,4 +1,4 @@
-package com.batit.phototranslator.photo
+package com.batit.phototranslator.ui.photo
 
 import android.Manifest
 import android.R
@@ -6,11 +6,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.widget.AdapterView
@@ -20,18 +19,19 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.batit.phototranslator.databinding.FragmentTranslatePhotoBinding
-import com.batit.phototranslator.main.MainViewModel
-import com.batit.phototranslator.util.*
-import com.bumptech.glide.Glide
+import com.batit.phototranslator.ui.main.MainViewModel
+import com.batit.phototranslator.core.util.Language
+import com.batit.phototranslator.core.util.checkPermissions
+import com.batit.phototranslator.core.util.saveTranslationToGallery
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.android.synthetic.main.main_fragment.*
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
 
 
 class TranslatePhotoFragment : Fragment() {
@@ -41,7 +41,10 @@ class TranslatePhotoFragment : Fragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private var imageHeight: Int = 0
     private var imageWidth: Int = 0
-    val array = ArrayList<Text.Line>()
+    val array = ArrayList<FirebaseVisionText.Line>()
+
+    private lateinit var functions: FirebaseFunctions
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,12 +54,16 @@ class TranslatePhotoFragment : Fragment() {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+//        functions = Firebase.
         setupViews()
         observeEvents()
         startImagePicker()
     }
+
+
 
     private fun setupViews() {
         val adapter = ArrayAdapter(
@@ -116,43 +123,30 @@ class TranslatePhotoFragment : Fragment() {
         }
         binding.selectedPictureContainer.setOnTouchListener { view, motionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN) {
-                Toast.makeText(requireContext(), "${motionEvent.x}  x  ${motionEvent.y}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "${motionEvent.x}  x  ${motionEvent.y}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
             return@setOnTouchListener true
         }
 
     }
 
-//    private fun textAsBitmap(text: String?, textSize: Float, textColor: Int): Bitmap? {
-//        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-//        paint.textSize = textSize
-//        paint.color = textColor
-//        paint.textAlign = Paint.Align.LEFT
-//        val baseline = -paint.ascent() // ascent() is negative
-//        val width = (paint.measureText(text) + 0.5f).toInt() // round
-//        val height = (baseline + paint.descent() + 0.5f).toInt()
-//        val image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-//        val canvas = Canvas(image)
-//        canvas.drawText(text!!, 0f, baseline, paint)
-//        return image
-//    }
-
     private fun startImagePicker() {
-//        val intent = Intent()
-//        intent.type = "image/*"
-//        intent.action = Intent.ACTION_GET_CONTENT
-//        resultLauncher.launch(intent)
-//        ImagePicker.with(this).galleryOnly().
         ImagePicker.with(this)
             .galleryOnly()
             .crop()
             .createIntent { intent ->
+                intent.type = "image/*"
+                intent.action = Intent.ACTION_GET_CONTENT
                 resultLauncher.launch(intent)
             }
     }
 
     private fun translate(
-        sourceText: ArrayList<Text.Line>,
+        sourceText: ArrayList<FirebaseVisionText.Line>,
         sourceCode: String,
         targetCode: String
     ) {
@@ -173,36 +167,38 @@ class TranslatePhotoFragment : Fragment() {
                 val display: Display = wm.defaultDisplay
                 imageHeight = pickedImage.height
                 imageWidth = pickedImage.width
-                if(display.height.toFloat() <= imageHeight){
-//                    val m = Matrix();
-                    pickedImage = Bitmap.createScaledBitmap(pickedImage,
-                        (pickedImage.width * 0.9).toInt(), (pickedImage.height*0.9).toInt(), true
+                if (display.height.toFloat() <= imageHeight) {
+                    pickedImage = Bitmap.createScaledBitmap(
+                        pickedImage,
+                        (pickedImage.width * 0.9).toInt(), (pickedImage.height * 0.9).toInt(), true
                     )
-
                 }
+//                runTextRecognition(pickedImage)
 
-                val inputImage = InputImage.fromBitmap(pickedImage, 0)
-                Glide.with(requireContext()).load(inputImage.bitmapInternal)
-                    .into(binding.selectedPictureContainer)
-                detector.process(inputImage)
-                    .addOnSuccessListener { visionText ->
-                        binding.sourceTextView.text = visionText.text
+                val inputImage = InputImage.fromFilePath(requireContext(), data)
+                val image = FirebaseVisionImage.fromBitmap(pickedImage )
+                val firebaseDetector = FirebaseVision.getInstance()
+                    .cloudTextRecognizer
 
-                        visionText.textBlocks.forEach {
+                val result = firebaseDetector.processImage(image)
+                    .addOnSuccessListener { firebaseVisionText ->
+                        Log.e("logs", firebaseVisionText.text)
+                        binding.sourceTextView.text = firebaseVisionText.text
+
+                        firebaseVisionText.textBlocks.forEach {
                             it.lines.forEach {
                                 array.add(it)
                             }
                         }
                         binding.selectedPictureContainer.rw = array
-                        viewModel.getSourceLang(visionText.text)
+                        viewModel.getSourceLang(firebaseVisionText.text)
                     }
-                    .addOnFailureListener { exception ->
-                        Log.e("logs", "Text recognition error", exception)
-                        exception.printStackTrace()
+                    .addOnFailureListener { e ->
                     }
+                binding.selectedPictureContainer.setImageURI(data)
+
             }
         }
-
 
 
 }

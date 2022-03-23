@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.batit.phototranslator.main.MainFragment"
+        android:name="com.batit.phototranslator.ui.main.MainFragment"
         android:label="MainFragment"
         tools:layout="@layout/main_fragment">
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/translatePhotoFragment"
-        android:name="com.batit.phototranslator.photo.TranslatePhotoFragment"
+        android:name="com.batit.phototranslator.ui.photo.TranslatePhotoFragment"
         android:label="TranslatePhotoFragment"
         tools:layout="@layout/fragment_translate_photo"/>
 </navigation>
