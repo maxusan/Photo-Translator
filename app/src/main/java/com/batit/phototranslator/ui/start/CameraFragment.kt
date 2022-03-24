@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -31,6 +32,7 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import com.batit.phototranslator.R
+import com.batit.phototranslator.core.data.Language
 
 
 class CameraFragment : Fragment() {
@@ -43,8 +45,11 @@ class CameraFragment : Fragment() {
 
     private lateinit var binding: FragmentCameraBinding
     private val viewModel: StartViewModel by activityViewModels()
-    private lateinit var primarySpinnerAdapter: ArrayAdapter<String>
-    private lateinit var secondarySpinnerAdapter: ArrayAdapter<String>
+    private lateinit var primarySpinnerAdapter: ArrayAdapter<Language>
+    private lateinit var secondarySpinnerAdapter: ArrayAdapter<Language>
+
+    private lateinit var secondaryLanguages: MutableList<Language>
+    private lateinit var primaryLanguages: MutableList<Language>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,20 +68,24 @@ class CameraFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        val languages = viewModel.getLanguages()
-        val primarySpinnerAdapter = ArrayAdapter(
+        primaryLanguages = viewModel.getLanguages().toMutableList()
+//        primaryLanguages.add(0, Language("Detect language"))
+        secondaryLanguages = viewModel.getLanguages().toMutableList()
+        secondarySpinnerAdapter = ArrayAdapter(
             requireContext(),
-            R.layout.simple_spinner_item, languages
-        )
-        primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        binding.primarySpinner.setAdapter(primarySpinnerAdapter)
-
-        val secondarySpinnerAdapter = ArrayAdapter(
-            requireContext(),
-            R.layout.simple_spinner_item, languages
+            R.layout.simple_spinner_item, secondaryLanguages
         )
         secondarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        binding.secondarySpinner.setAdapter(primarySpinnerAdapter)
+        binding.secondarySpinner.adapter = secondarySpinnerAdapter
+        binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(Language("en")))
+
+        primarySpinnerAdapter = ArrayAdapter(
+            requireContext(),
+            R.layout.simple_spinner_item, primaryLanguages
+        )
+        primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        binding.primarySpinner.adapter = primarySpinnerAdapter
+        binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(Language("ru")))
     }
 
     private fun setupListeners() {
@@ -92,6 +101,33 @@ class CameraFragment : Fragment() {
         }
         binding.photoButton.setOnClickListener {
             takePhoto()
+        }
+        binding.primarySpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                viewModel.setPrimaryLanguage(primaryLanguages[p2])
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+
+            }
+
+        }
+        binding.secondarySpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                viewModel.setSecondaryLanguage(secondaryLanguages[p2])
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+
+            }
+
+        }
+
+        binding.swapButton.setOnClickListener {
+            val primaryLanguage = viewModel.getPrimaryLanguage().value!!
+            val secondaryLanguage = viewModel.getSecondaryLanguage().value!!
+            binding.secondarySpinner.setSelection(primarySpinnerAdapter.getPosition(primaryLanguage))
+            binding.primarySpinner.setSelection(secondarySpinnerAdapter.getPosition(secondaryLanguage))
         }
     }
 
@@ -206,7 +242,7 @@ class CameraFragment : Fragment() {
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(binding.cameraPreview.createSurfaceProvider())
+                    it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
                 }
             imageCapture = ImageCapture.Builder().build()
 

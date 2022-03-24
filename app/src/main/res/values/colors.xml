@@ -7,5 +7,6 @@
         <color name="ucrop_color_widget_active">@color/colorAccent</color>
 
         <color name="main_bg_color">#ECF1FF</color>
+    <color name="main_text_color">#14142B</color>
 
 </resources>

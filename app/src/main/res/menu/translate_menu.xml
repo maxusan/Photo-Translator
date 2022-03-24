@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/translate"
+        android:title="@string/translate_to"/>
+    <item
+        android:id="@+id/cropImage"
+        android:title="@string/crop_image"/>
+</menu>

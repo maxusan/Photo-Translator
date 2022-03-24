@@ -42,7 +42,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.analyzer.TextAnalyzer
-import com.batit.phototranslator.core.util.Language
+import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.ScopedExecutor
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.concurrent.ExecutorService
@@ -268,7 +268,7 @@ class MainFragment : Fragment() {
             camera = cameraProvider.bindToLifecycle(
                 this, cameraSelector, preview, imageAnalyzer
             )
-            preview.setSurfaceProvider(viewFinder.createSurfaceProvider())
+            preview.setSurfaceProvider(viewFinder.surfaceProvider)
         } catch (exc: IllegalStateException) {
             Log.e(TAG, "Use case binding failed. This must be running on main thread.", exc)
         }

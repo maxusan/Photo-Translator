@@ -22,7 +22,15 @@
         <argument
             android:name="imageUri"
             app:argType="android.net.Uri" />
+        <action
+            android:id="@+id/action_translateFragment_to_pickLanguageFragment"
+            app:destination="@id/pickLanguageFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/pickLanguageFragment"
+        android:name="com.batit.phototranslator.ui.start.PickLanguageFragment"
+        android:label="PickLanguageFragment"
+        tools:layout="@layout/fragment_pick_language"/>
 
 
 </navigation>

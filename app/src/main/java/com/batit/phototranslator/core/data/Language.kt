@@ -15,18 +15,28 @@
  *
  */
 
-package com.batit.phototranslator.core.util
+package com.batit.phototranslator.core.data
 
+import androidx.annotation.DrawableRes
+import androidx.databinding.BaseObservable
+import androidx.databinding.Bindable
+import com.batit.phototranslator.BR
 import java.util.*
 
-/**
- * Holds the language code (i.e. "en") and the corresponding localized full language name
- * (i.e. "English")
- */
-class Language(val code: String) : Comparable<Language> {
+class Language(
+    val code: String = "",
+    @DrawableRes val icon: Int = 0) : Comparable<Language>, BaseObservable() {
 
     val displayName: String
         get() = Locale(code).displayName
+
+    @Bindable
+    var languageSelected: Boolean = false
+    set(value) {
+        field = value
+        notifyPropertyChanged(BR.languageSelected)
+    }
+
 
     override fun equals(other: Any?): Boolean {
         if (other === this) {

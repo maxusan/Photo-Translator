@@ -33,6 +33,7 @@
             app:layout_constraintTop_toTopOf="@id/close">
 
             <ImageButton
+                android:id="@+id/button_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
@@ -40,6 +41,7 @@
                 app:elevation="8dp" />
 
             <ImageButton
+                android:id="@+id/button_share"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
@@ -48,6 +50,7 @@
                 android:src="@drawable/ic_button_share" />
 
             <ImageButton
+                android:id="@+id/button_three_dot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"

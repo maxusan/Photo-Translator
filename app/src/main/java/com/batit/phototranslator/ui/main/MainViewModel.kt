@@ -10,7 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.batit.phototranslator.ui.main.MainFragment.Companion.DESIRED_HEIGHT_CROP_PERCENT
 import com.batit.phototranslator.ui.main.MainFragment.Companion.DESIRED_WIDTH_CROP_PERCENT
-import com.batit.phototranslator.core.util.Language
+import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.ResultOrError
 import com.batit.phototranslator.core.util.SmoothedMutableLiveData
 import com.google.android.gms.tasks.OnCompleteListener

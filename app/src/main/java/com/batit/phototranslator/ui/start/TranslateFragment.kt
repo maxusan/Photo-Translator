@@ -3,12 +3,12 @@ package com.batit.phototranslator.ui.start
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.view.*
+import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.viewModels
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
@@ -42,12 +42,35 @@ class TranslateFragment : Fragment() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                    binding.translateView.setImage(resource)
                     viewModel.detectText(resource){
-
+                        viewModel.translateText(it, viewModel.getPrimaryLanguage().value!!.code, viewModel.getSecondaryLanguage().value!!.code){
+                            binding.translateView.setTranslatedText(it)
+                        }
                     }
                 }
                 override fun onLoadCleared(placeholder: Drawable?) {
 
                 }
             })
+        binding.buttonText.setOnClickListener {
+            binding.translateView.showText = !binding.translateView.showText
+        }
+        binding.buttonThreeDot.setOnClickListener {
+            showMenu(it)
+        }
+    }
+
+    private fun showMenu(it: View) {
+        val popup = PopupMenu(requireActivity(), it)
+        popup.menuInflater
+            .inflate(R.menu.translate_menu, popup.menu)
+        popup.setOnMenuItemClickListener { item ->
+            when(item.itemId){
+                R.id.translate -> {findNavController().navigate(TranslateFragmentDirections.actionTranslateFragmentToPickLanguageFragment())}
+                R.id.cropImage -> {}
+            }
+            true
+        }
+
+        popup.show()
     }
 }

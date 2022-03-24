@@ -20,7 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.batit.phototranslator.databinding.FragmentTranslatePhotoBinding
 import com.batit.phototranslator.ui.main.MainViewModel
-import com.batit.phototranslator.core.util.Language
+import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.core.util.saveTranslationToGallery
 import com.github.dhaval2404.imagepicker.ImagePicker

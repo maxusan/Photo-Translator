@@ -6,9 +6,13 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.databinding.BindingAdapter
 import com.batit.phototranslator.core.CustomView
+import com.batit.phototranslator.core.data.Language
+import com.bumptech.glide.Glide
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -34,6 +38,11 @@ fun Context.checkPermissions(vararg permissions: String, granted: (Boolean) -> U
                 token: PermissionToken?
             ){}
         }).check()
+}
+
+@BindingAdapter("setLanguageImage")
+fun ImageView.setLanguageImage(language: Language){
+    Glide.with(this).load(language.icon).into(this)
 }
 
 fun CustomView.saveTranslationToGallery(){
