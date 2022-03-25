@@ -57,9 +57,6 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:1.1.0-beta02"
     implementation "androidx.camera:camera-view:1.1.0-beta02"
 
-
-//    implementation 'com.google.firebase:firebase-ml-natural-language:22.0.1'
-//    implementation 'com.google.firebase:firebase-ml-natural-language-translate-model:20.0.9'
     implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
 
 // ML Kit dependencies

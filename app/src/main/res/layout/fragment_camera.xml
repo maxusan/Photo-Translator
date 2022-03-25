@@ -58,8 +58,7 @@
                     android:layout_marginHorizontal="4dp"
                     android:popupBackground="@drawable/language_background"
                     android:spinnerMode="dropdown"
-                    android:dropDownHeight="100dp"
-                    android:dropDownVerticalOffset="-140dp" />
+                    android:dropDownHeight="100dp" />
 
                 <ImageView
                     android:layout_width="wrap_content"

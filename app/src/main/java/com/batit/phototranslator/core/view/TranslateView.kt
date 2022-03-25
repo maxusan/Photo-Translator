@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
-import com.batit.phototranslator.core.TranslatedText
+import com.batit.phototranslator.core.data.TranslatedText
 
 class TranslateView(context: Context, attributeSet: AttributeSet) :
     AppCompatImageView(context, attributeSet) {
@@ -42,8 +42,23 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
         invalidate()
     }
 
+    fun getImageWithTranslate(): Bitmap{
+        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+        val canvas = Canvas(bmp)
+        bitmap?.let {
+            canvas.drawBitmap(it, bitmapMatrix, null)
+            textsList?.let {
+                if (showText) {
+                    drawTextOverImage(it, canvas)
+                }
+            }
+        }
+        return Bitmap.createBitmap(bmp, transX.toInt(), transY.toInt(), (width - transX * 2).toInt(), (height - transY * 2).toInt())
+    }
+
     fun setImage(bitmap: Bitmap) {
         this.bitmap = bitmap
+        matrixScaled = false
         invalidate()
     }
 

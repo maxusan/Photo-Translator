@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
+        <variable
+            name="downloading"
+            type="Boolean" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -38,7 +40,9 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_button_text"
-                app:elevation="8dp" />
+                app:elevation="8dp"
+                android:clickable="@{downloading}"
+                android:focusable="@{downloading}"/>
 
             <ImageButton
                 android:id="@+id/button_share"

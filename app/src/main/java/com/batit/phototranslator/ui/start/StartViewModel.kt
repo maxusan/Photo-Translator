@@ -2,24 +2,33 @@ package com.batit.phototranslator.ui.start
 
 import android.graphics.Bitmap
 import android.graphics.Rect
-import android.util.LruCache
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.batit.phototranslator.core.TranslatedText
+import com.batit.phototranslator.core.data.TranslatedText
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
-import com.batit.phototranslator.core.util.SmoothedMutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
-import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.firebase.ml.vision.text.RecognizedLanguage
 import com.google.mlkit.nl.translate.Translation
-import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
+import com.hadilq.liveevent.LiveEvent
+
 
 class StartViewModel : ViewModel() {
+
+    private var modelDownloadTask: Task<Void> = Tasks.forCanceled()
+
+    private val modelDownloading = MutableLiveData<Boolean>(true)
+    private fun setModelDownloading(downloading: Boolean) {
+        modelDownloading.postValue(downloading)
+    }
+
+    fun getModelDownloading() = modelDownloading
 
     private val availableLanguages: List<Language> = LanguageProvider.getLanguages()
     fun getLanguages() = availableLanguages
@@ -27,6 +36,9 @@ class StartViewModel : ViewModel() {
     private val primaryLanguage = MutableLiveData<Language>()
     fun setPrimaryLanguage(language: Language) {
         primaryLanguage.postValue(language)
+        kotlin.runCatching {
+            downloadModelIfNeed(getSecondaryLanguage().value!!.code, language.code)
+        }
     }
 
     fun getPrimaryLanguage() = primaryLanguage
@@ -34,6 +46,9 @@ class StartViewModel : ViewModel() {
     private val secondaryLanguage = MutableLiveData<Language>()
     fun setSecondaryLanguage(language: Language) {
         secondaryLanguage.postValue(language)
+        kotlin.runCatching {
+            downloadModelIfNeed(getPrimaryLanguage().value!!.code, language.code)
+        }
     }
 
     fun getSecondaryLanguage() = secondaryLanguage
@@ -42,9 +57,10 @@ class StartViewModel : ViewModel() {
     private lateinit var image: FirebaseVisionImage
 
     private val languageState = MutableLiveData(LanguageState.PRIMARY)
-    fun setLanguageState(state: LanguageState){
+    fun setLanguageState(state: LanguageState) {
         languageState.postValue(state)
     }
+
     fun getLanguageState() = languageState
 
     fun detectText(bitmap: Bitmap, callback: (FirebaseVisionText) -> Unit) {
@@ -56,20 +72,75 @@ class StartViewModel : ViewModel() {
         }
     }
 
+    private fun downloadModelIfNeed(
+        source: String,
+        target: String
+    ) {
+        setModelDownloading(true)
+        val options = TranslatorOptions.Builder()
+            .setSourceLanguage(source)
+            .setTargetLanguage(target)
+            .build()
+        val translator = Translation.getClient(options)
+        modelDownloadTask = translator.downloadModelIfNeeded()
+    }
+
+    private fun detectLanguage(firebaseVisionText: FirebaseVisionText): RecognizedLanguage? {
+        val languagesList = mutableListOf<RecognizedLanguage>()
+        firebaseVisionText.textBlocks.forEach {
+            val pop = getPopularElement(it.recognizedLanguages.toTypedArray())
+            if (pop != null) {
+                languagesList.add(pop)
+            }
+        }
+        return getPopularElement(languagesList.toTypedArray())
+    }
+
+    private fun getPopularElement(a: Array<RecognizedLanguage>): RecognizedLanguage? {
+        kotlin.runCatching {
+            var count = 1
+            var tempCount: Int
+            var popular = a[0]
+            var temp = a[0]
+            for (i in 0 until a.size - 1) {
+                temp = a[i]
+                tempCount = 0
+                for (j in 1 until a.size) {
+                    if (temp == a[j]) tempCount++
+                }
+                if (tempCount > count) {
+                    popular = temp
+                    count = tempCount
+                }
+            }
+            return popular
+        }
+        return null
+    }
+
     fun translateText(
         firebaseVisionText: FirebaseVisionText,
         source: String,
         target: String,
         callback: (List<TranslatedText>) -> Unit
     ) {
+        val options = if (source != Language.getDefaultLanguage().code) {
+            TranslatorOptions.Builder()
+                .setSourceLanguage(source)
+                .setTargetLanguage(target)
+                .build()
+        } else {
+            TranslatorOptions.Builder()
+                .setSourceLanguage(detectLanguage(firebaseVisionText)?.languageCode ?: "en")
+                .setTargetLanguage(target)
+                .build()
+        }
         val translatedTextList = mutableListOf<TranslatedText>()
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(source)
-            .setTargetLanguage(target)
-            .build()
+
         val translator = Translation.getClient(options)
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
+                setModelDownloading(false)
                 firebaseVisionText.textBlocks.forEach { textBlock ->
                     textBlock.lines.forEachIndexed { index, line ->
                         translator.translate(line.text).addOnCompleteListener {
@@ -79,7 +150,7 @@ class StartViewModel : ViewModel() {
                                     boundingBox = line.boundingBox ?: Rect()
                                 )
                             )
-                            if(index == textBlock.lines.size - 1){
+                            if (index == textBlock.lines.size - 1) {
                                 callback(translatedTextList)
                             }
                         }
@@ -88,5 +159,11 @@ class StartViewModel : ViewModel() {
             }.addOnFailureListener {
                 it.printStackTrace()
             }
+    }
+
+    private val _startMainEvent = LiveEvent<Boolean>()
+    val startMainEvent: LiveData<Boolean> = _startMainEvent
+    fun startMain(){
+        _startMainEvent.postValue(true)
     }
 }

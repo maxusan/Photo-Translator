@@ -1,5 +1,6 @@
 package com.batit.phototranslator.ui.start
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +14,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.databinding.ActivityStartBinding
+import com.batit.phototranslator.ui.main.MainActivity
 import com.karumi.dexter.Dexter
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -29,5 +31,9 @@ class StartActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
+        viewModel.startMainEvent.observe(this){
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
     }
 }

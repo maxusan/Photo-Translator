@@ -1,20 +1,28 @@
 package com.batit.phototranslator.ui.start
 
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
+import com.batit.phototranslator.core.util.SaveManager
+import com.batit.phototranslator.core.util.getImageFromUri
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
+import com.yalantis.ucrop.UCrop
+import java.io.File
+import java.util.*
 
 
 class TranslateFragment : Fragment() {
@@ -35,27 +43,49 @@ class TranslateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Glide.with(this)
-            .asBitmap()
-            .load(translateArgs.imageUri)
-            .into(object : CustomTarget<Bitmap>(){
-                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                   binding.translateView.setImage(resource)
-                    viewModel.detectText(resource){
-                        viewModel.translateText(it, viewModel.getPrimaryLanguage().value!!.code, viewModel.getSecondaryLanguage().value!!.code){
-                            binding.translateView.setTranslatedText(it)
-                        }
-                    }
-                }
-                override fun onLoadCleared(placeholder: Drawable?) {
-
-                }
-            })
+        processText(translateArgs.imageUri)
         binding.buttonText.setOnClickListener {
-            binding.translateView.showText = !binding.translateView.showText
+            if (viewModel.getModelDownloading().value!!) {
+                Toast.makeText(
+                    requireContext(),
+                    "Please wait until download finish",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                binding.translateView.showText = !binding.translateView.showText
+            }
         }
         binding.buttonThreeDot.setOnClickListener {
             showMenu(it)
+        }
+        viewModel.getModelDownloading().observe(viewLifecycleOwner) {
+            binding.downloading = !it
+        }
+        binding.buttonShare.setOnClickListener {
+            val path = SaveManager.saveImage(requireContext(), binding.translateView.getImageWithTranslate())
+            val uri = FileProvider.getUriForFile(requireContext(), requireContext().packageName + ".fileprovider", File(path))
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "image/*"
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+            startActivity(Intent.createChooser(shareIntent, "Share Image"))
+        }
+        binding.close.setOnClickListener {
+            viewModel.startMain()
+        }
+    }
+
+    private fun processText(uri: Uri) {
+        requireContext().getImageFromUri(uri) {
+            binding.translateView.setImage(it)
+            viewModel.detectText(it) {
+                viewModel.translateText(
+                    it,
+                    viewModel.getPrimaryLanguage().value!!.code,
+                    viewModel.getSecondaryLanguage().value!!.code
+                ) {
+                    binding.translateView.setTranslatedText(it)
+                }
+            }
         }
     }
 
@@ -64,13 +94,44 @@ class TranslateFragment : Fragment() {
         popup.menuInflater
             .inflate(R.menu.translate_menu, popup.menu)
         popup.setOnMenuItemClickListener { item ->
-            when(item.itemId){
-                R.id.translate -> {findNavController().navigate(TranslateFragmentDirections.actionTranslateFragmentToPickLanguageFragment())}
-                R.id.cropImage -> {}
+            when (item.itemId) {
+                R.id.translate -> {
+                    findNavController().navigate(TranslateFragmentDirections.actionTranslateFragmentToPickLanguageFragment())
+                }
+                R.id.cropImage -> {
+                    cropImage(translateArgs.imageUri)
+                }
             }
             true
         }
 
         popup.show()
+    }
+
+    private var startForCrop = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            assert(result.data != null)
+            val resultUri = UCrop.getOutput(result.data!!)
+            if (resultUri != null) {
+                processText(resultUri)
+            }
+        } else {
+            Toast.makeText(requireContext(), "Task Cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun cropImage(imageUri: Uri) {
+        kotlin.runCatching {
+            val folder = File(requireContext().cacheDir.path + "CameraX/")
+            if (!folder.exists()) {
+                folder.mkdir()
+            }
+            val imageFileDest = File(folder, UUID.randomUUID().toString() + ".jpg")
+            val intent = UCrop.of(imageUri, Uri.fromFile(imageFileDest))
+                .getIntent(requireActivity())
+            startForCrop.launch(intent)
+        }
     }
 }

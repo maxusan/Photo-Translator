@@ -62,4 +62,10 @@ class Language(
     override fun hashCode(): Int {
         return code.hashCode()
     }
+
+    companion object{
+        fun getDefaultLanguage(): Language{
+            return Language(code = "Detect language")
+        }
+    }
 }

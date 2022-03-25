@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.batit.phototranslator.R
+import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.databinding.FragmentCameraBinding
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -31,8 +33,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.data.Language
 
 
 class CameraFragment : Fragment() {
@@ -68,7 +68,9 @@ class CameraFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        primaryLanguages = viewModel.getLanguages().toMutableList()
+        primaryLanguages = viewModel.getLanguages().toMutableList().apply {
+            add(0, Language.getDefaultLanguage())
+        }
 //        primaryLanguages.add(0, Language("Detect language"))
         secondaryLanguages = viewModel.getLanguages().toMutableList()
         secondarySpinnerAdapter = ArrayAdapter(
@@ -124,10 +126,17 @@ class CameraFragment : Fragment() {
         }
 
         binding.swapButton.setOnClickListener {
-            val primaryLanguage = viewModel.getPrimaryLanguage().value!!
-            val secondaryLanguage = viewModel.getSecondaryLanguage().value!!
-            binding.secondarySpinner.setSelection(primarySpinnerAdapter.getPosition(primaryLanguage))
-            binding.primarySpinner.setSelection(secondarySpinnerAdapter.getPosition(secondaryLanguage))
+            val firstIndex = binding.primarySpinner.selectedItemId
+            val secondIndex  = binding.secondarySpinner.selectedItemId
+            val primaryLanguage = primaryLanguages[firstIndex.toInt()]
+            val secondaryLanguage = secondaryLanguages[secondIndex.toInt()]
+            if(primaryLanguage.code != Language.getDefaultLanguage().code){
+                binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(primaryLanguage))
+                binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(secondaryLanguage))
+            }
+        }
+        binding.close.setOnClickListener {
+            viewModel.startMain()
         }
     }
 

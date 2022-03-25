@@ -1,4 +1,4 @@
-package com.batit.phototranslator.core
+package com.batit.phototranslator.core.data
 
 import android.graphics.Rect
 import android.graphics.RectF

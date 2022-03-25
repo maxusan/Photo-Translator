@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.databinding.FragmentPickLanguageBinding
@@ -81,6 +82,9 @@ class PickLanguageFragment : Fragment() {
             override fun languageClick(language: Language) {
                 viewModel.setSecondaryLanguage(language)
             }
+        }
+        binding.back.setOnClickListener {
+            findNavController().navigateUp()
         }
     }
 }
