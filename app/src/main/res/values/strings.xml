@@ -10,4 +10,15 @@
     <string name="pick_language">Choose language</string>
     <string name="translate_to">Translate to</string>
     <string name="crop_image">Crop image</string>
+    <string name="home">Home</string>
+    <string name="history">History</string>
+    <string name="communication">Communication</string>
+    <string name="rate_app">Rate app</string>
+    <string name="terms_of_use_amp_privacy_police"><![CDATA[Terms of Use & Privacy Police]]></string>
+    <string name="version_1_5_1_0">Version 1.5.1.0</string>
+    <string name="translate_text">Translate text</string>
+    <string name="record">Record</string>
+    <string name="capture">Capture</string>
+    <string name="document">Document</string>
+    <string name="import_title">Import</string>
 </resources>

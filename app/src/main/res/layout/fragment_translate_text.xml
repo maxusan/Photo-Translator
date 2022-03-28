@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.text.TranslateTextFragment">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:focusedByDefault="true"
+            tools:ignore="MissingConstraints" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/main_bg_color"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_back"
+                app:layout_constraintBottom_toBottomOf="@id/title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/title" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:fontFamily="@font/pop_reg"
+                android:text="@string/translate_text"
+                android:textColor="@color/main_text_color"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:id="@+id/language_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/top_bar">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/language_background" />
+
+                <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/primary_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="4dp"
+                    android:dropDownHeight="100dp"
+                    android:popupBackground="@drawable/language_background"
+                    android:spinnerMode="dropdown" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_dropdown_image"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <ImageButton
+                android:id="@+id/swap_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_swap" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/language_background" />
+
+                <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/secondary_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="4dp"
+                    android:dropDownHeight="100dp"
+                    android:popupBackground="@drawable/language_background"
+                    android:spinnerMode="dropdown" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_dropdown_image"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="16dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/language_container">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/edit_text_root"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/white_cornered_background"
+                android:elevation="10dp"
+                android:outlineProvider="none"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:id="@+id/controls"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageButton
+                        android:id="@+id/share_1"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_share" />
+
+                    <ImageButton
+                        android:id="@+id/copy_1"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginVertical="4dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_copy" />
+
+                    <ImageButton
+                        android:id="@+id/preview_1"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_preview" />
+
+                </LinearLayout>
+
+                <ScrollView
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="4dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/controls"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edit_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:fontFamily="@font/pop_reg"
+                        android:lineSpacingExtra="-2dp"
+                        android:textColor="@color/main_text_color"
+                        android:textIsSelectable="true"
+                        android:textSize="14sp" />
+
+                </ScrollView>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="-12dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_background"
+                android:paddingHorizontal="8dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="8dp">
+
+                <ScrollView
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="4dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/controls_bottom"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:fontFamily="@font/pop_reg"
+                        android:lineSpacingExtra="-2dp"
+                        android:textColor="#fff"
+                        android:textIsSelectable="true"
+                        android:textSize="14sp" />
+
+                </ScrollView>
+
+                <LinearLayout
+                    android:id="@+id/controls_bottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <ImageButton
+                        android:id="@+id/share_2"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_share"
+                        app:tint="#fff" />
+
+                    <ImageButton
+                        android:id="@+id/copy_2"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginVertical="4dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_copy"
+                        app:tint="#fff" />
+
+                    <ImageButton
+                        android:id="@+id/preview_2"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_preview"
+                        app:tint="#fff" />
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -3,20 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/app_navigation"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/home">
 
     <fragment
-        android:id="@+id/mainFragment"
+        android:id="@+id/home"
         android:name="com.batit.phototranslator.ui.main.MainFragment"
-        android:label="MainFragment"
-        tools:layout="@layout/main_fragment">
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
         <action
-            android:id="@+id/action_mainFragment_to_translatePhotoFragment"
-            app:destination="@id/translatePhotoFragment" />
+            android:id="@+id/action_home_to_translateTextFragment"
+            app:destination="@id/translateTextFragment" />
     </fragment>
     <fragment
-        android:id="@+id/translatePhotoFragment"
-        android:name="com.batit.phototranslator.ui.photo.TranslatePhotoFragment"
-        android:label="TranslatePhotoFragment"
-        tools:layout="@layout/fragment_translate_photo"/>
+        android:id="@+id/history"
+        android:name="com.batit.phototranslator.ui.main.HistoryFragment"
+        android:label="fragment_history"
+        tools:layout="@layout/fragment_history" />
+    <fragment
+        android:id="@+id/translateTextFragment"
+        android:name="com.batit.phototranslator.ui.text.TranslateTextFragment"
+        android:label="fragment_translate_text"
+        tools:layout="@layout/fragment_translate_text" >
+        <action
+            android:id="@+id/action_translateTextFragment_to_textPreviewFragment"
+            app:destination="@id/textPreviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/textPreviewFragment"
+        android:name="com.batit.phototranslator.ui.text.TextPreviewFragment"
+        android:label="TextPreviewFragment"
+        tools:layout="@layout/fragment_text_preview">
+        <argument
+            android:name="text"
+            app:argType="string" />
+    </fragment>
 </navigation>

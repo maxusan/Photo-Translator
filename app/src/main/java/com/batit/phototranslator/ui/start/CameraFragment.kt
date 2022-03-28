@@ -26,6 +26,7 @@ import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.databinding.FragmentCameraBinding
+import com.batit.phototranslator.ui.MainViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.yalantis.ucrop.UCrop
 import java.io.File
@@ -44,7 +45,7 @@ class CameraFragment : Fragment() {
     private var torchEnabled: Boolean = false
 
     private lateinit var binding: FragmentCameraBinding
-    private val viewModel: StartViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
     private lateinit var primarySpinnerAdapter: ArrayAdapter<Language>
     private lateinit var secondarySpinnerAdapter: ArrayAdapter<Language>
 

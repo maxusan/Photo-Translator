@@ -52,11 +52,12 @@
                 android:fontFamily="@font/pop_reg"
                 android:text="@string/pick_language"
                 android:textColor="@color/main_text_color"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:textStyle="bold"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

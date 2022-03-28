@@ -78,6 +78,25 @@ object LanguageProvider {
             )
         )
 
+        languageList.add(
+            Language(
+                code = TranslateLanguage.UKRAINIAN,
+                icon = R.drawable.ic_ukraine
+            )
+        )
+        languageList.add(
+            Language(
+                code = TranslateLanguage.PORTUGUESE,
+                icon = R.drawable.ic_portuguese
+            )
+        )
+        languageList.add(
+            Language(
+                code = TranslateLanguage.KOREAN,
+                icon = R.drawable.ic_korea
+            )
+        )
+
         return languageList
     }
 

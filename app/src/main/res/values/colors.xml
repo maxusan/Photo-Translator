@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-        <color name="colorPrimary">#008577</color>
-        <color name="colorPrimaryDark">#00574B</color>
-        <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
 
-        <color name="ucrop_color_widget_active">@color/colorAccent</color>
+    <color name="ucrop_color_widget_active">@color/colorAccent</color>
 
-        <color name="main_bg_color">#ECF1FF</color>
+    <color name="main_bg_color">#ECF1FF</color>
     <color name="main_text_color">#14142B</color>
+    <color name="main_text_color_70">#B314142B</color>
+    <color name="primary_color">#0066FF</color>
 
 </resources>

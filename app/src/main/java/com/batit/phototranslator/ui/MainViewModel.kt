@@ -1,25 +1,28 @@
-package com.batit.phototranslator.ui.start
+package com.batit.phototranslator.ui
 
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.batit.phototranslator.core.data.TranslatedText
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
+import com.batit.phototranslator.core.data.TranslatedText
+import com.batit.phototranslator.ui.start.LanguageState
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.google.firebase.ml.vision.text.RecognizedLanguage
+import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.hadilq.liveevent.LiveEvent
 
 
-class StartViewModel : ViewModel() {
+class MainViewModel : ViewModel() {
 
     private var modelDownloadTask: Task<Void> = Tasks.forCanceled()
 
@@ -54,6 +57,7 @@ class StartViewModel : ViewModel() {
     fun getSecondaryLanguage() = secondaryLanguage
 
     private val detector = FirebaseVision.getInstance().cloudTextRecognizer
+    val languageIdentifier = LanguageIdentification.getClient()
     private lateinit var image: FirebaseVisionImage
 
     private val languageState = MutableLiveData(LanguageState.PRIMARY)
@@ -83,6 +87,22 @@ class StartViewModel : ViewModel() {
             .build()
         val translator = Translation.getClient(options)
         modelDownloadTask = translator.downloadModelIfNeeded()
+    }
+
+    private fun detectLanguage(text: String, callback: (String) -> Unit) {
+        languageIdentifier.identifyLanguage(text)
+            .addOnSuccessListener { languageCode ->
+                if (languageCode == "und") {
+                    Log.i("logs", "Can't identify language.")
+                } else {
+                    callback(languageCode)
+                }
+            }
+            .addOnFailureListener {
+                // Model couldn’t be loaded or other internal error.
+                // ...
+            }
+
     }
 
     private fun detectLanguage(firebaseVisionText: FirebaseVisionText): RecognizedLanguage? {
@@ -161,9 +181,48 @@ class StartViewModel : ViewModel() {
             }
     }
 
+    fun translateText(
+        text: String,
+        source: String,
+        target: String,
+        callback: (String) -> Unit
+    ) {
+        detectLanguage(text){
+            val options = if (source != Language.getDefaultLanguage().code) {
+                TranslatorOptions.Builder()
+                    .setSourceLanguage(source)
+                    .setTargetLanguage(target)
+                    .build()
+            } else {
+                TranslatorOptions.Builder()
+                    .setSourceLanguage(it)
+                    .setTargetLanguage(target)
+                    .build()
+            }
+
+            val translator = Translation.getClient(options)
+            translator.downloadModelIfNeeded()
+                .addOnSuccessListener {
+                    setModelDownloading(false)
+                    translator.translate(text).addOnCompleteListener {
+                        callback(it.result)
+                    }
+                }.addOnFailureListener {
+                    it.printStackTrace()
+                }
+        }
+
+    }
+
     private val _startMainEvent = LiveEvent<Boolean>()
     val startMainEvent: LiveData<Boolean> = _startMainEvent
-    fun startMain(){
+    fun startMain() {
         _startMainEvent.postValue(true)
+    }
+
+    private val _openDrawerEvent = LiveEvent<Boolean>()
+    val openDrawerEvent: LiveData<Boolean> = _openDrawerEvent
+    fun openDrawer() {
+        _openDrawerEvent.postValue(true)
     }
 }

@@ -20,6 +20,7 @@ import com.batit.phototranslator.R
 import com.batit.phototranslator.core.util.SaveManager
 import com.batit.phototranslator.core.util.getImageFromUri
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
+import com.batit.phototranslator.ui.MainViewModel
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.util.*
@@ -31,7 +32,7 @@ class TranslateFragment : Fragment() {
 
     private lateinit var binding: FragmentTranslateBinding
 
-    private val viewModel: StartViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
