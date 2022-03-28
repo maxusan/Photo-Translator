@@ -50,16 +50,4 @@ class MainActivity : AppCompatActivity() {
     private fun showBottomNav() {
         binding.bottomNavView.visibility = View.VISIBLE
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-//        kotlin.runCatching {
-//            if (resultCode == Activity.RESULT_OK && data != null) {
-//                val docPaths = ArrayList<Uri>()
-//                docPaths.addAll(data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS)!!)
-//                val uri = docPaths[0]
-//                viewModel.pickDocument(uri)
-//            }
-//        }
-    }
 }

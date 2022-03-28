@@ -20,13 +20,12 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.anggrayudi.storage.SimpleStorage
-import com.anggrayudi.storage.callback.FilePickerCallback
 import com.batit.phototranslator.R
+import com.batit.phototranslator.core.FileUtils
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.core.util.getMimeType
@@ -115,7 +114,8 @@ class MainFragment : Fragment() {
                 kotlin.runCatching {
                     val data = result.data!!.data!!
                     var parsedText: String = ""
-                    val path = requireContext().getRealPathFromURI(data)
+                    val path = FileUtils.getPath(requireContext(), data)
+                    val file = File(path)
                     when (data.getMimeType(requireContext())) {
                         "pdf" -> {
                             PDFBoxResourceLoader.init(requireContext())
@@ -141,77 +141,81 @@ class MainFragment : Fragment() {
 
                         }
                         "txt" -> {
-//                            val reader = FileReader(file.path)
-//                            parsedText = reader.readText()
+                            val reader = FileReader(file.path)
+                            parsedText = reader.readText()
                         }
-                        "doc", "docx" -> {
-
-                            val file = File(path)
-                            val instr: InputStream = FileInputStream(file.path)
-                            val document = XWPFDocument(instr)
-                            val options: XHTMLOptions = XHTMLOptions.create()
-                                .URIResolver(FileURIResolver(file))
-
-                            val out: OutputStream = ByteArrayOutputStream()
-
-
-                            XHTMLConverter.getInstance().convert(document, out, options)
-                            parsedText = out.toString()
-//                            println(html)
-                        }
+//                        "doc", "docx" -> {
+//
+//
+//                            val instr: InputStream = FileInputStream(file)
+//                            val document = XWPFDocument(instr)
+//                            val options: XHTMLOptions = XHTMLOptions.create()
+//                                .URIResolver(FileURIResolver(file))
+//
+//                            val out: OutputStream = ByteArrayOutputStream()
+//
+//
+//                            XHTMLConverter.getInstance().convert(document, out, options)
+//                            parsedText = out.toString()
+////                            println(html)
+//                        }
                         else -> {}
                     }
                     Log.e("logs", parsedText)
-
+                    if(parsedText.isNotBlank()){
+                        findNavController().navigate(MainFragmentDirections.actionHomeToTranslateTextFragment(parsedText))
+                    }
                 }.exceptionOrNull()?.printStackTrace()
+
             }
         }
 
 
     private fun pickDocument() {
-        if (SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                try {
-                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                    intent.addCategory("android.intent.category.DEFAULT")
-                    intent.data =
-                        Uri.parse(String.format("package:%s", requireContext().packageName))
-                    startActivityForResult(intent, 2296)
-                } catch (e: Exception) {
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
-                    startActivityForResult(intent, 2296)
-                }
-            } else {
+        requireContext().checkPermissions(
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) {
+            if (it) {
+                if (SDK_INT >= Build.VERSION_CODES.R) {
+                    if (!Environment.isExternalStorageManager()) {
+                        try {
+                            val intent =
+                                Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                            intent.addCategory("android.intent.category.DEFAULT")
+                            intent.data =
+                                Uri.parse(String.format("package:%s", requireContext().packageName))
+                            startActivityForResult(intent, 2296)
+                        } catch (e: Exception) {
+                            val intent = Intent()
+                            intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
+                            startActivityForResult(intent, 2296)
+                        }
+                    } else {
 //                FilePickerBuilder.instance.setMaxCount(1).pickFile(this)
-                startPdfLauncher()
-            }
-        } else {
-            requireContext().checkPermissions(
-                android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) {
-                if (it) {
+                        startPdfLauncher()
+                    }
+                } else {
+                    requireContext().checkPermissions(
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) {
+                        if (it) {
 //                    FilePickerBuilder.instance.setMaxCount(1).pickFile(this)
-                    startPdfLauncher()
+                            startPdfLauncher()
+                        }
+                    }
                 }
             }
         }
 
+
     }
-//    private val activityResultLauncher =
-//        registerForActivityResult(
-//            ActivityResultContracts.RequestPermission()){isGranted ->
-//            // Handle Permission granted/rejected
-//            if (isGranted) {
-//                startPdfLauncher()
-//            }
-//        }
 
     private fun startPdfLauncher() {
         val mimeTypes = arrayOf(
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  // .doc & .docx
+//            "application/msword",
+//            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  // .doc & .docx
 //            "application/vnd.ms-powerpoint",
 //            "application/vnd.openxmlformats-officedocument.presentationml.presentation",  // .ppt & .pptx
 //            "application/vnd.ms-excel",
@@ -220,12 +224,9 @@ class MainFragment : Fragment() {
             "application/pdf",
 //            "application/zip"
         )
-
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-
         intent.type = "*/*"
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-
         startForDocumentResult.launch(intent)
 
     }
