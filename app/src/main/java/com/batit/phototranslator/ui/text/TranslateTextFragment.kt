@@ -16,12 +16,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.copyTextToClipboard
 import com.batit.phototranslator.core.util.shareText
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
 import com.batit.phototranslator.ui.MainViewModel
+import kotlinx.android.synthetic.main.fragment_text_preview.*
 
 
 class TranslateTextFragment : Fragment() {
@@ -33,6 +35,8 @@ class TranslateTextFragment : Fragment() {
 
     private lateinit var secondaryLanguages: MutableList<Language>
     private lateinit var primaryLanguages: MutableList<Language>
+
+    private val textArguments: TranslateTextFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +50,9 @@ class TranslateTextFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupSpinners()
         setupListeners()
+        if(textArguments.text != null){
+            binding.editText.setText(textArguments.text)
+        }
     }
 
     private fun setupSpinners() {
@@ -187,14 +194,16 @@ class TranslateTextFragment : Fragment() {
 
 
     private fun translateText() {
-        binding.editText.text.toString()?.let {
-            if (!it.isNullOrBlank()) {
-                viewModel.translateText(
-                    it,
-                    viewModel.getPrimaryLanguage().value!!.code,
-                    viewModel.getSecondaryLanguage().value!!.code
-                ) {
-                    binding.text.text = it
+        kotlin.runCatching {
+            binding.editText.text.toString()?.let {
+                if (!it.isNullOrBlank()) {
+                    viewModel.translateText(
+                        it,
+                        viewModel.getPrimaryLanguage().value!!.code,
+                        viewModel.getSecondaryLanguage().value!!.code
+                    ) {
+                        binding.text.text = it
+                    }
                 }
             }
         }

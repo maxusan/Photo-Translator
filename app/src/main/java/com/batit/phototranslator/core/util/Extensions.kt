@@ -1,12 +1,12 @@
 package com.batit.phototranslator.core.util
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.provider.DocumentsContract
+import android.provider.MediaStore
+import android.webkit.MimeTypeMap
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.databinding.BindingAdapter
@@ -20,6 +20,7 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import java.io.File
 
 
 fun Context.checkPermissions(vararg permissions: String, granted: (Boolean) -> Unit) {
@@ -48,6 +49,35 @@ fun Fragment.shareText(text: String) {
     )
     intent.putExtra(Intent.EXTRA_TEXT, text)
     startActivity(Intent.createChooser(intent, "Share"))
+}
+
+fun Context.getRealPathFromURI( contentUri: Uri): String? {
+    val column = arrayOf(MediaStore.Images.ImageColumns.DATA)
+
+    val cursor = contentResolver.query(
+        contentUri,
+        column, null, null, null
+    )
+
+    var filePath: String? = ""
+
+    val columnIndex = cursor!!.getColumnIndex(column[0])
+
+    if (cursor!!.moveToFirst()) {
+        filePath = cursor!!.getString(columnIndex)
+    }
+    cursor!!.close()
+    return filePath
+}
+
+fun Uri.getMimeType(context: Context): String? {
+    val extension: String? = if (this.scheme == ContentResolver.SCHEME_CONTENT) {
+        val mime = MimeTypeMap.getSingleton()
+        mime.getExtensionFromMimeType(context.contentResolver.getType(this))
+    } else {
+         MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(File(this.path)).toString())
+    }
+    return extension
 }
 
 fun Fragment.copyTextToClipboard(text: String) {

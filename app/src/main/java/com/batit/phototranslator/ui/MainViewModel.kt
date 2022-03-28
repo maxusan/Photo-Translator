@@ -2,6 +2,7 @@ package com.batit.phototranslator.ui
 
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -38,7 +39,7 @@ class MainViewModel : ViewModel() {
 
     private val primaryLanguage = MutableLiveData<Language>()
     fun setPrimaryLanguage(language: Language) {
-        primaryLanguage.postValue(language)
+        primaryLanguage.value = language
         kotlin.runCatching {
             downloadModelIfNeed(getSecondaryLanguage().value!!.code, language.code)
         }
@@ -48,7 +49,7 @@ class MainViewModel : ViewModel() {
 
     private val secondaryLanguage = MutableLiveData<Language>()
     fun setSecondaryLanguage(language: Language) {
-        secondaryLanguage.postValue(language)
+        secondaryLanguage.value = language
         kotlin.runCatching {
             downloadModelIfNeed(getPrimaryLanguage().value!!.code, language.code)
         }
@@ -224,5 +225,11 @@ class MainViewModel : ViewModel() {
     val openDrawerEvent: LiveData<Boolean> = _openDrawerEvent
     fun openDrawer() {
         _openDrawerEvent.postValue(true)
+    }
+
+    private val _pickDocumentEvent = LiveEvent<Uri>()
+    val pickDocumentEvent: LiveData<Uri> = _pickDocumentEvent
+    fun pickDocument(uri: Uri){
+        _pickDocumentEvent.value = uri
     }
 }
