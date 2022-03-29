@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_home_to_translateTextFragment"
             app:destination="@id/translateTextFragment" />
+        <action
+            android:id="@+id/action_home_to_translateFragment2"
+            app:destination="@id/translateFragment2" />
     </fragment>
     <fragment
         android:id="@+id/history"
@@ -41,4 +44,23 @@
             android:name="text"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/translateFragment2"
+        android:name="com.batit.phototranslator.ui.main.MainTranslateFragment"
+        android:label="TranslateFragment"
+        tools:layout="@layout/fragment_translate">
+
+        <argument
+            android:name="imageUri"
+            app:argType="android.net.Uri" />
+        <action
+            android:id="@+id/action_translateFragment2_to_pickLanguageFragment2"
+            app:destination="@id/pickLanguageFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/pickLanguageFragment2"
+        android:name="com.batit.phototranslator.ui.main.MainPickLanguageFragment"
+        android:label="PickLanguageFragment"
+        tools:layout="@layout/fragment_pick_language"/>
+
 </navigation>

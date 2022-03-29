@@ -29,9 +29,9 @@ import com.batit.phototranslator.core.FileUtils
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.core.util.getMimeType
-import com.batit.phototranslator.core.util.getRealPathFromURI
 import com.batit.phototranslator.databinding.FragmentMainBinding
 import com.batit.phototranslator.ui.MainViewModel
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -105,7 +105,40 @@ class MainFragment : Fragment() {
         binding.document.setOnClickListener {
             pickDocument()
         }
+        binding.capture.setOnClickListener {
+            ImagePicker.with(this)
+                .cameraOnly()
+                .crop()
+                .createIntent {
+                    startForProfileImageResult.launch(it)
+                }
+        }
+
+        binding.importButton.setOnClickListener {
+            ImagePicker.with(this)
+                .galleryOnly()
+                .crop()
+                .createIntent {
+                    startForProfileImageResult.launch(it)
+                }
+        }
     }
+
+    private val startForProfileImageResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            val resultCode = result.resultCode
+            val data = result.data
+            if (resultCode == Activity.RESULT_OK) {
+                val fileUri = data?.data!!
+                kotlin.runCatching {
+                    findNavController().navigate(MainFragmentDirections.actionHomeToTranslateFragment2(fileUri))
+                }
+            } else if (resultCode == ImagePicker.RESULT_ERROR) {
+                Toast.makeText(requireContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Task Cancelled", Toast.LENGTH_SHORT).show()
+            }
+        }
 
     private val startForDocumentResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -144,21 +177,21 @@ class MainFragment : Fragment() {
                             val reader = FileReader(file.path)
                             parsedText = reader.readText()
                         }
-//                        "doc", "docx" -> {
-//
-//
-//                            val instr: InputStream = FileInputStream(file)
-//                            val document = XWPFDocument(instr)
-//                            val options: XHTMLOptions = XHTMLOptions.create()
-//                                .URIResolver(FileURIResolver(file))
-//
-//                            val out: OutputStream = ByteArrayOutputStream()
-//
-//
-//                            XHTMLConverter.getInstance().convert(document, out, options)
-//                            parsedText = out.toString()
-////                            println(html)
-//                        }
+                        "doc", "docx" -> {
+                            val `in`: InputStream = FileInputStream(File(path))
+                            val document = XWPFDocument(`in`)
+
+
+                            val options = XHTMLOptions.create()
+                                .URIResolver(FileURIResolver(File("word/media")))
+
+                            val out: OutputStream = ByteArrayOutputStream()
+
+
+                            XHTMLConverter.getInstance().convert(document, out, options)
+                            val html = out.toString()
+                            println(html)
+                        }
                         else -> {}
                     }
                     Log.e("logs", parsedText)
@@ -214,8 +247,8 @@ class MainFragment : Fragment() {
 
     private fun startPdfLauncher() {
         val mimeTypes = arrayOf(
-//            "application/msword",
-//            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  // .doc & .docx
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  // .doc & .docx
 //            "application/vnd.ms-powerpoint",
 //            "application/vnd.openxmlformats-officedocument.presentationml.presentation",  // .ppt & .pptx
 //            "application/vnd.ms-excel",

@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.batit.phototranslator.ui.main
 
 import android.app.Activity
 import android.content.Intent
@@ -21,18 +21,17 @@ import com.batit.phototranslator.core.util.SaveManager
 import com.batit.phototranslator.core.util.getImageFromUri
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
 import com.batit.phototranslator.ui.MainViewModel
+import com.batit.phototranslator.ui.start.StartViewModel
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.util.*
 
-
-class TranslateFragment : Fragment() {
-
-    private val translateArgs: TranslateFragmentArgs by navArgs()
+class MainTranslateFragment: Fragment() {
+    private val translateArgs: MainTranslateFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentTranslateBinding
 
-    private val viewModel: StartViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -99,7 +98,7 @@ class TranslateFragment : Fragment() {
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.translate -> {
-                    findNavController().navigate(TranslateFragmentDirections.actionTranslateFragmentToPickLanguageFragment())
+                    findNavController().navigate(MainTranslateFragmentDirections.actionTranslateFragment2ToPickLanguageFragment2())
                 }
                 R.id.cropImage -> {
                     cropImage(translateArgs.imageUri)

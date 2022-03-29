@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
@@ -45,7 +46,7 @@ class CameraFragment : Fragment() {
     private var torchEnabled: Boolean = false
 
     private lateinit var binding: FragmentCameraBinding
-    private val viewModel: MainViewModel by activityViewModels()
+    private val viewModel: StartViewModel by activityViewModels()
     private lateinit var primarySpinnerAdapter: ArrayAdapter<Language>
     private lateinit var secondarySpinnerAdapter: ArrayAdapter<Language>
 
@@ -63,6 +64,7 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         cameraExecutor = Executors.newSingleThreadExecutor()
+
         checkPermissionsForCamera()
         setupListeners()
         setupSpinners()
@@ -82,6 +84,7 @@ class CameraFragment : Fragment() {
         binding.secondarySpinner.adapter = secondarySpinnerAdapter
         binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(Language("en")))
 
+
         primarySpinnerAdapter = ArrayAdapter(
             requireContext(),
             R.layout.simple_spinner_item, primaryLanguages
@@ -89,6 +92,9 @@ class CameraFragment : Fragment() {
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
         binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(Language("ru")))
+
+        viewModel.setPrimaryLanguage(primarySpinnerAdapter.getItem(binding.primarySpinner.selectedItemPosition)!!)
+        viewModel.setSecondaryLanguage(secondarySpinnerAdapter.getItem(binding.secondarySpinner.selectedItemPosition)!!)
     }
 
     private fun setupListeners() {
@@ -105,35 +111,45 @@ class CameraFragment : Fragment() {
         binding.photoButton.setOnClickListener {
             takePhoto()
         }
-        binding.primarySpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                viewModel.setPrimaryLanguage(primaryLanguages[p2])
-            }
+        binding.primarySpinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    viewModel.setPrimaryLanguage(primaryLanguages[p2])
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
+                override fun onNothingSelected(p0: AdapterView<*>?) {
 
-            }
-
-        }
-        binding.secondarySpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                viewModel.setSecondaryLanguage(secondaryLanguages[p2])
-            }
-
-            override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
 
             }
+        binding.secondarySpinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    viewModel.setSecondaryLanguage(secondaryLanguages[p2])
+                }
 
-        }
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+
+                }
+
+            }
 
         binding.swapButton.setOnClickListener {
             val firstIndex = binding.primarySpinner.selectedItemId
-            val secondIndex  = binding.secondarySpinner.selectedItemId
+            val secondIndex = binding.secondarySpinner.selectedItemId
             val primaryLanguage = primaryLanguages[firstIndex.toInt()]
             val secondaryLanguage = secondaryLanguages[secondIndex.toInt()]
-            if(primaryLanguage.code != Language.getDefaultLanguage().code){
-                binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(primaryLanguage))
-                binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(secondaryLanguage))
+            if (primaryLanguage.code != Language.getDefaultLanguage().code) {
+                binding.secondarySpinner.setSelection(
+                    secondarySpinnerAdapter.getPosition(
+                        primaryLanguage
+                    )
+                )
+                binding.primarySpinner.setSelection(
+                    primarySpinnerAdapter.getPosition(
+                        secondaryLanguage
+                    )
+                )
             }
         }
         binding.close.setOnClickListener {

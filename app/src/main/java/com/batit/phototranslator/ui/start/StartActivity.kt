@@ -8,14 +8,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.NavHostFragment
 import com.batit.phototranslator.R
 import com.batit.phototranslator.databinding.ActivityStartBinding
-import com.batit.phototranslator.ui.MainViewModel
 import com.batit.phototranslator.ui.main.MainActivity
 import java.util.concurrent.ExecutorService
 
 class StartActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityStartBinding
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: StartViewModel by viewModels()
     private lateinit var cameraExecutor: ExecutorService
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.batit.phototranslator.ui.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,12 +11,13 @@ import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.databinding.FragmentPickLanguageBinding
 import com.batit.phototranslator.ui.MainViewModel
+import com.batit.phototranslator.ui.start.LanguageListAdapter
+import com.batit.phototranslator.ui.start.LanguageState
 
-
-class PickLanguageFragment : Fragment() {
+class MainPickLanguageFragment: Fragment() {
 
     private lateinit var binding: FragmentPickLanguageBinding
-    private val viewModel: StartViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     private val primaryAdapter: LanguageListAdapter by lazy { LanguageListAdapter() }
     private val secondaryAdapter: LanguageListAdapter by lazy { LanguageListAdapter() }
@@ -88,4 +89,5 @@ class PickLanguageFragment : Fragment() {
             findNavController().navigateUp()
         }
     }
+
 }

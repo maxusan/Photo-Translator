@@ -15,6 +15,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.ui.setupWithNavController
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
+import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.databinding.ActivityMainBinding
 import com.batit.phototranslator.ui.MainViewModel
 
@@ -41,6 +42,8 @@ class MainActivity : AppCompatActivity() {
                 else -> hideBottomNav()
             }
         }
+        viewModel.setPrimaryLanguage(LanguageProvider.getLanguages()[1])
+        viewModel.setSecondaryLanguage(LanguageProvider.getLanguages()[2])
     }
 
     private fun hideBottomNav() {

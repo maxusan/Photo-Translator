@@ -9,6 +9,12 @@
             name="torch"
             type="Boolean" />
 
+        <variable
+            name="fromHome"
+            type="Boolean" />
+
+        <import type="android.view.View"/>
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,7 +35,8 @@
             android:background="@android:color/transparent"
             android:src="@drawable/ic_close"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="@{fromHome ? View.GONE : View.VISIBLE}"/>
 
         <LinearLayout
             android:id="@+id/language_container"
