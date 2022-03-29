@@ -27,6 +27,7 @@ import com.anggrayudi.storage.SimpleStorage
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.FileUtils
 import com.batit.phototranslator.core.data.Language
+import com.batit.phototranslator.core.db.PhotoItem
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.core.util.getMimeType
 import com.batit.phototranslator.databinding.FragmentMainBinding
@@ -41,6 +42,8 @@ import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainFragment : Fragment() {
@@ -128,17 +131,36 @@ class MainFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             val resultCode = result.resultCode
             val data = result.data
-            if (resultCode == Activity.RESULT_OK) {
-                val fileUri = data?.data!!
-                kotlin.runCatching {
-                    findNavController().navigate(MainFragmentDirections.actionHomeToTranslateFragment2(fileUri))
+            when (resultCode) {
+                Activity.RESULT_OK -> {
+                    val fileUri = data?.data!!
+                    saveImage(fileUri)
+                    kotlin.runCatching {
+                        findNavController().navigate(MainFragmentDirections.actionHomeToTranslateFragment2(fileUri))
+                    }
                 }
-            } else if (resultCode == ImagePicker.RESULT_ERROR) {
-                Toast.makeText(requireContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Task Cancelled", Toast.LENGTH_SHORT).show()
+                ImagePicker.RESULT_ERROR -> {
+                    Toast.makeText(requireContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    Toast.makeText(requireContext(), "Task Cancelled", Toast.LENGTH_SHORT).show()
+                }
             }
         }
+
+    private fun saveImage(fileUri: Uri) {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy, HH:mm")
+        val date = dateFormat.format(Calendar.getInstance().time);
+        val filename: String = fileUri.toString().substring(fileUri.toString().lastIndexOf("/") + 1)
+        viewModel.insertPhoto(
+            PhotoItem(
+                id = UUID.randomUUID().toString(),
+                photoName = filename,
+                photoUri = fileUri.toString(),
+                dateAdded = date
+            )
+        )
+    }
 
     private val startForDocumentResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -225,7 +247,6 @@ class MainFragment : Fragment() {
                             startActivityForResult(intent, 2296)
                         }
                     } else {
-//                FilePickerBuilder.instance.setMaxCount(1).pickFile(this)
                         startPdfLauncher()
                     }
                 } else {
@@ -234,7 +255,6 @@ class MainFragment : Fragment() {
                         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
                     ) {
                         if (it) {
-//                    FilePickerBuilder.instance.setMaxCount(1).pickFile(this)
                             startPdfLauncher()
                         }
                     }
@@ -248,20 +268,31 @@ class MainFragment : Fragment() {
     private fun startPdfLauncher() {
         val mimeTypes = arrayOf(
             "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  // .doc & .docx
-//            "application/vnd.ms-powerpoint",
-//            "application/vnd.openxmlformats-officedocument.presentationml.presentation",  // .ppt & .pptx
-//            "application/vnd.ms-excel",
-//            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  // .xls & .xlsx
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "text/plain",
             "application/pdf",
-//            "application/zip"
         )
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "*/*"
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
         startForDocumentResult.launch(intent)
 
+    }
+
+    fun getErrorText(errorCode: Int): String? {
+        val message: String = when (errorCode) {
+            SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+            SpeechRecognizer.ERROR_CLIENT -> "Client side error"
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
+            SpeechRecognizer.ERROR_NETWORK -> "Network error"
+            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+            SpeechRecognizer.ERROR_NO_MATCH -> "No match"
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "RecognitionService busy"
+            SpeechRecognizer.ERROR_SERVER -> "error from server"
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
+            else -> "Didn't understand, please try again."
+        }
+        return message
     }
 
     private fun startSpeechRecognition() {
@@ -286,7 +317,11 @@ class MainFragment : Fragment() {
                 if (voiceResults == null) {
                     println("No voice results")
                 } else {
-                    val text = voiceResults.toString()
+                    var text: String = ""
+                    voiceResults.forEach {
+                        text += it + "\n"
+                    }
+
                     kotlin.runCatching {
                         findNavController().navigate(
                             MainFragmentDirections.actionHomeToTranslateTextFragment(
@@ -299,20 +334,21 @@ class MainFragment : Fragment() {
 
             override fun onReadyForSpeech(params: Bundle) {
                 println("Ready for speech")
+                snackBar.show()
             }
 
             override fun onError(error: Int) {
                 snackBar.dismiss()
                 Toast.makeText(
                     requireContext(),
-                    "Error listening for speech: $error",
+                    "Error listening for speech: ${getErrorText(error)}",
                     Toast.LENGTH_SHORT
                 ).show()
             }
 
             override fun onBeginningOfSpeech() {
 //                Toast.makeText(requireContext(), "Listening", Toast.LENGTH_SHORT).show()
-                snackBar.show()
+
             }
 
             override fun onBufferReceived(buffer: ByteArray) {

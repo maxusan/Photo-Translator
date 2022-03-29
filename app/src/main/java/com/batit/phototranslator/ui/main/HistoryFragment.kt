@@ -1,20 +1,108 @@
 package com.batit.phototranslator.ui.main
 
+import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.batit.phototranslator.R
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import com.batit.phototranslator.core.db.PhotoItem
+import com.batit.phototranslator.databinding.FragmentHistoryBinding
+import com.batit.phototranslator.ui.MainViewModel
 
 
-class HistoryFragment : Fragment() {
+class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
+
+    private lateinit var binding: FragmentHistoryBinding
+    private val adapter: HistoryAdapter by lazy { HistoryAdapter(this) }
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_history, container, false)
+    ): View {
+        binding = FragmentHistoryBinding.inflate(inflater)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.photoList.adapter = adapter
+        viewModel.getPhotos().observe(viewLifecycleOwner) {
+            adapter.submitList(null)
+            adapter.submitList(it.asReversed())
+            viewModel.setInDelete(false)
+        }
+        val itemTouchHelper = ItemTouchHelper(
+            SwipeToDeleteCallback(
+                adapter,
+                requireContext(),
+                object : SwipeToDeleteCallback.SwipeDelete {
+                    override fun swipeDelete(position: Int) {
+                        val currentPhoto = adapter.currentList[position]
+                        viewModel.deletePhoto(currentPhoto)
+                    }
+                })
+        )
+        itemTouchHelper.attachToRecyclerView(binding.photoList)
+        binding.selectAll.setOnClickListener {
+            val currntList = adapter.currentList.toMutableList()
+            currntList.forEach {
+                if (!it.photoPicked) {
+                    it.setPhotoPicked()
+                }
+            }
+            viewModel.setInDelete(true)
+            adapter.submitList(currntList)
+        }
+        binding.delete.setOnClickListener {
+            val currntList = adapter.currentList.toMutableList().filter { item -> item.photoPicked }
+            currntList.forEach {
+                viewModel.deletePhoto(it)
+            }
+            viewModel.setInDelete(false)
+        }
+        binding.cancel.setOnClickListener {
+            val currntList = adapter.currentList.toMutableList()
+            currntList.forEach {
+                if (it.photoPicked)
+                    it.setPhotoPicked()
+            }
+            viewModel.setInDelete(false)
+            adapter.submitList(currntList)
+        }
+        viewModel.getInDelete().observe(viewLifecycleOwner) {
+            binding.inDelete = it
+            adapter.inLongClick = it
+        }
+        binding.appBarHistory.toolbar.setNavigationOnClickListener {
+            viewModel.openDrawer()
+        }
+    }
+
+    override fun longClick(photoItem: PhotoItem) {
+        val currList = adapter.currentList.toMutableList()
+        val idx = currList.indexOf(photoItem)
+        currList[idx].setPhotoPicked()
+        val countOfPicked = currList.count { item -> item.photoPicked }
+        val inDelete = countOfPicked != 0
+        adapter.inLongClick = inDelete
+        viewModel.setInDelete(inDelete)
+
+        adapter.submitList(currList)
+//        adapter.notifyItemChanged(idx)
+    }
+
+    override fun click(photoItem: PhotoItem) {
+        kotlin.runCatching {
+            findNavController().navigate(
+                HistoryFragmentDirections.actionHistoryToTranslateFragment2(
+                    Uri.parse(photoItem.photoUri)
+                )
+            )
+        }
     }
 }

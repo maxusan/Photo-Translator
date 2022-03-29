@@ -21,7 +21,11 @@
         android:id="@+id/history"
         android:name="com.batit.phototranslator.ui.main.HistoryFragment"
         android:label="fragment_history"
-        tools:layout="@layout/fragment_history" />
+        tools:layout="@layout/fragment_history" >
+        <action
+            android:id="@+id/action_history_to_translateFragment2"
+            app:destination="@id/translateFragment2" />
+    </fragment>
     <fragment
         android:id="@+id/translateTextFragment"
         android:name="com.batit.phototranslator.ui.text.TranslateTextFragment"

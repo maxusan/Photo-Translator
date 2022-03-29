@@ -100,4 +100,9 @@ dependencies {
     implementation "fr.opensagres.xdocreport:fr.opensagres.poi.xwpf.converter.core:2.0.1"
     implementation "fr.opensagres.xdocreport:fr.opensagres.poi.xwpf.converter.xhtml:2.0.1"
 
+    //room
+    implementation "androidx.room:room-ktx:2.4.2"
+    kapt "androidx.room:room-compiler:2.4.2"
+    androidTestImplementation "androidx.room:room-testing:2.4.2"
+
 }

@@ -5,6 +5,7 @@
 
     <data>
 
+
     </data>
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -37,6 +38,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:menu="@menu/bottom_menu" />
 
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.navigation.NavigationView
@@ -50,6 +52,8 @@
             app:itemIconTint="@color/drawer_tint_selector"
             app:itemTextColor="@color/drawer_text_tint_selector"
             app:menu="@menu/drawer_menu" />
+
+
     </androidx.drawerlayout.widget.DrawerLayout>
 
 

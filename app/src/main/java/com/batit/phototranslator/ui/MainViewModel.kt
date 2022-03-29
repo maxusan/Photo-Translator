@@ -7,9 +7,12 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.batit.phototranslator.core.PhotoRepository
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.core.data.TranslatedText
+import com.batit.phototranslator.core.db.PhotoItem
 import com.batit.phototranslator.ui.start.LanguageState
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -21,6 +24,7 @@ import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.hadilq.liveevent.LiveEvent
+import kotlinx.coroutines.launch
 
 
 class MainViewModel : ViewModel() {
@@ -232,4 +236,24 @@ class MainViewModel : ViewModel() {
     fun pickDocument(uri: Uri){
         _pickDocumentEvent.value = uri
     }
+
+    fun insertPhoto(photoItem: PhotoItem){
+        viewModelScope.launch {
+            PhotoRepository.insertPhoto(photoItem)
+        }
+    }
+
+    fun deletePhoto(photoItem: PhotoItem){
+        viewModelScope.launch {
+            PhotoRepository.deletePhoto(photoItem)
+        }
+    }
+
+    fun getPhotos() = PhotoRepository.getPhotos()
+
+    private val inDeleteLiveData = MutableLiveData(false)
+    fun setInDelete(value: Boolean){
+        inDeleteLiveData.value = value
+    }
+    fun getInDelete() = inDeleteLiveData
 }

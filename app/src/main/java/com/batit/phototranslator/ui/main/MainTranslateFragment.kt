@@ -1,5 +1,7 @@
 package com.batit.phototranslator.ui.main
 
+import android.R.attr.path
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -17,14 +19,16 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
+import com.batit.phototranslator.core.db.PhotoItem
 import com.batit.phototranslator.core.util.SaveManager
 import com.batit.phototranslator.core.util.getImageFromUri
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
 import com.batit.phototranslator.ui.MainViewModel
-import com.batit.phototranslator.ui.start.StartViewModel
 import com.yalantis.ucrop.UCrop
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.*
+
 
 class MainTranslateFragment: Fragment() {
     private val translateArgs: MainTranslateFragmentArgs by navArgs()
@@ -70,7 +74,7 @@ class MainTranslateFragment: Fragment() {
             startActivity(Intent.createChooser(shareIntent, "Share Image"))
         }
         binding.close.setOnClickListener {
-            viewModel.startMain()
+            findNavController().navigateUp()
         }
     }
 
@@ -136,4 +140,5 @@ class MainTranslateFragment: Fragment() {
             startForCrop.launch(intent)
         }
     }
+
 }

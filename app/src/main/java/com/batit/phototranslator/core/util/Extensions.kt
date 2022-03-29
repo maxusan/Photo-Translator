@@ -12,9 +12,11 @@ import android.widget.Toast
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import com.batit.phototranslator.core.data.Language
+import com.batit.phototranslator.core.db.PhotoItem
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.google.android.material.imageview.ShapeableImageView
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -68,6 +70,11 @@ fun Context.getRealPathFromURI( contentUri: Uri): String? {
     }
     cursor!!.close()
     return filePath
+}
+
+@BindingAdapter("setPhoto")
+fun ShapeableImageView.setPhoto(photoItem: PhotoItem){
+    Glide.with(this).load(photoItem.photoUri).into(this)
 }
 
 fun Uri.getMimeType(context: Context): String? {
