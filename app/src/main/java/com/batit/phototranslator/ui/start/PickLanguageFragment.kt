@@ -31,7 +31,9 @@ class PickLanguageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        primaryAdapter.submitList(LanguageProvider.getLanguages())
+        primaryAdapter.submitList(LanguageProvider.getLanguages().toMutableList().apply {
+            this.add(0, Language.getDefaultLanguage())
+        })
         secondaryAdapter.submitList(LanguageProvider.getLanguages())
         viewModel.getPrimaryLanguage().observe(viewLifecycleOwner) {
             binding.primary = it
@@ -70,8 +72,10 @@ class PickLanguageFragment : Fragment() {
         binding.swapButton.setOnClickListener {
             val primaryLanguage = viewModel.getPrimaryLanguage().value!!
             val secondaryLanguage = viewModel.getSecondaryLanguage().value!!
-            viewModel.setPrimaryLanguage(secondaryLanguage)
-            viewModel.setSecondaryLanguage(primaryLanguage)
+            if(primaryLanguage.code != Language.getDefaultLanguage().code){
+                viewModel.setPrimaryLanguage(secondaryLanguage)
+                viewModel.setSecondaryLanguage(primaryLanguage)
+            }
         }
 
         primaryAdapter.languageClick = object: LanguageListAdapter.LanguageClick{

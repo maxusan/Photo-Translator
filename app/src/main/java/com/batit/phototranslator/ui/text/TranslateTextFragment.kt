@@ -75,7 +75,7 @@ class TranslateTextFragment : Fragment() {
         )
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
-        binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(Language("ru")))
+        binding.primarySpinner.setSelection(0)
     }
 
     private fun setupListeners() {

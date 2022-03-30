@@ -21,6 +21,7 @@ import com.batit.phototranslator.core.util.SaveManager
 import com.batit.phototranslator.core.util.getImageFromUri
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
 import com.batit.phototranslator.ui.MainViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.util.*
@@ -34,6 +35,10 @@ class TranslateFragment : Fragment() {
 
     private val viewModel: StartViewModel by activityViewModels()
 
+    private var modelDownloading: Boolean = true
+
+    private lateinit var snackbar: Snackbar
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,9 +49,18 @@ class TranslateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        snackbar = Snackbar.make(binding.root, "Please wait", Snackbar.LENGTH_INDEFINITE)
+        viewModel.getModelDownloading().observe(viewLifecycleOwner){
+            if(it){
+                snackbar.show()
+            }else{
+                snackbar.dismiss()
+            }
+            modelDownloading = it
+        }
         processText(translateArgs.imageUri)
         binding.buttonText.setOnClickListener {
-            if (viewModel.getModelDownloading().value!!) {
+            if (modelDownloading) {
                 Toast.makeText(
                     requireContext(),
                     "Please wait until download finish",
@@ -59,9 +73,9 @@ class TranslateFragment : Fragment() {
         binding.buttonThreeDot.setOnClickListener {
             showMenu(it)
         }
-        viewModel.getModelDownloading().observe(viewLifecycleOwner) {
-            binding.downloading = !it
-        }
+//        viewModel.getModelDownloading().observe(viewLifecycleOwner) {
+//            binding.downloading = !it
+//        }
         binding.buttonShare.setOnClickListener {
             val path = SaveManager.saveImage(requireContext(), binding.translateView.getImageWithTranslate())
             val uri = FileProvider.getUriForFile(requireContext(), requireContext().packageName + ".fileprovider", File(path))

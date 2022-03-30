@@ -91,7 +91,7 @@ class CameraFragment : Fragment() {
         )
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
-        binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(Language("ru")))
+        binding.primarySpinner.setSelection(0)
 
         viewModel.setPrimaryLanguage(primarySpinnerAdapter.getItem(binding.primarySpinner.selectedItemPosition)!!)
         viewModel.setSecondaryLanguage(secondarySpinnerAdapter.getItem(binding.secondarySpinner.selectedItemPosition)!!)

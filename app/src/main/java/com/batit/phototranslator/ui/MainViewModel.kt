@@ -165,7 +165,6 @@ class MainViewModel : ViewModel() {
         val translator = Translation.getClient(options)
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
-                setModelDownloading(false)
                 firebaseVisionText.textBlocks.forEach { textBlock ->
                     textBlock.lines.forEachIndexed { index, line ->
                         translator.translate(line.text).addOnCompleteListener {
@@ -177,6 +176,7 @@ class MainViewModel : ViewModel() {
                             )
                             if (index == textBlock.lines.size - 1) {
                                 callback(translatedTextList)
+                                setModelDownloading(false)
                             }
                         }
                     }

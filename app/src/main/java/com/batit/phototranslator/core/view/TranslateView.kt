@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import androidx.appcompat.widget.AppCompatImageView
 import com.batit.phototranslator.core.data.TranslatedText
 
@@ -32,7 +33,8 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
 
     init {
         textPaint.color = Color.BLACK
-        textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        textPaint.textAlign = Paint.Align.CENTER
         rectPaint.color = Color.WHITE
         rectPaint.style = Paint.Style.FILL
     }
@@ -42,7 +44,7 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
         invalidate()
     }
 
-    fun getImageWithTranslate(): Bitmap{
+    fun getImageWithTranslate(): Bitmap {
         val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
         val canvas = Canvas(bmp)
         bitmap?.let {
@@ -53,7 +55,13 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
                 }
             }
         }
-        return Bitmap.createBitmap(bmp, transX.toInt(), transY.toInt(), (width - transX * 2).toInt(), (height - transY * 2).toInt())
+        return Bitmap.createBitmap(
+            bmp,
+            transX.toInt(),
+            transY.toInt(),
+            (width - transX * 2).toInt(),
+            (height - transY * 2).toInt()
+        )
     }
 
     fun setImage(bitmap: Bitmap) {
@@ -104,10 +112,21 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
             }
 
             textPaint.textSize = (text.boundingBox.bottom - text.boundingBox.top).toFloat()
+            textPaint.textScaleX = 1f
+            var r = Rect()
+            r.set(text.boundingBox)
+            textPaint.getTextBounds(text.text, 0, text.text.length, r)
+            val scx = text.boundingBox.width().toFloat() / r.width().toFloat()
+            if (scx in 0.01f..3f)
+                textPaint.textScaleX = scx
+//            Log.e("logs", "scx ${scx}")
+//            Log.e("logs", "text ${text.text}")
+//            Log.e("logs", "r.width ${r.width()}")
+//            Log.e("logs", "text.boundingBox.width ${text.boundingBox.width()}")
             canvas.drawRect(text.boundingBox, rectPaint)
             canvas.drawText(
-                text.text, text.boundingBox.left.toFloat(),
-                text.boundingBox.centerY().toFloat(), textPaint
+                text.text, text.boundingBox.centerX().toFloat(),
+                text.boundingBox.bottom.toFloat(), textPaint
             )
         }
     }

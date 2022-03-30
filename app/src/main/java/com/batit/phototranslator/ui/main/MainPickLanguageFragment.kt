@@ -32,7 +32,9 @@ class MainPickLanguageFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        primaryAdapter.submitList(LanguageProvider.getLanguages())
+        primaryAdapter.submitList(LanguageProvider.getLanguages().toMutableList().apply {
+            this.add(0, Language.getDefaultLanguage())
+        })
         secondaryAdapter.submitList(LanguageProvider.getLanguages())
         viewModel.getPrimaryLanguage().observe(viewLifecycleOwner) {
             binding.primary = it

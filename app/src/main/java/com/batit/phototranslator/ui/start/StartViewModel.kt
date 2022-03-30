@@ -87,21 +87,6 @@ class StartViewModel: ViewModel() {
         modelDownloadTask = translator.downloadModelIfNeeded()
     }
 
-    private fun detectLanguage(text: String, callback: (String) -> Unit) {
-        languageIdentifier.identifyLanguage(text)
-            .addOnSuccessListener { languageCode ->
-                if (languageCode == "und") {
-                    Log.i("logs", "Can't identify language.")
-                } else {
-                    callback(languageCode)
-                }
-            }
-            .addOnFailureListener {
-                // Model couldn’t be loaded or other internal error.
-                // ...
-            }
-
-    }
 
     private fun detectLanguage(firebaseVisionText: FirebaseVisionText): RecognizedLanguage? {
         val languagesList = mutableListOf<RecognizedLanguage>()
@@ -142,6 +127,7 @@ class StartViewModel: ViewModel() {
         target: String,
         callback: (List<TranslatedText>) -> Unit
     ) {
+        setModelDownloading(true)
         val options = if (source != Language.getDefaultLanguage().code) {
             TranslatorOptions.Builder()
                 .setSourceLanguage(source)
@@ -158,7 +144,6 @@ class StartViewModel: ViewModel() {
         val translator = Translation.getClient(options)
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
-                setModelDownloading(false)
                 firebaseVisionText.textBlocks.forEach { textBlock ->
                     textBlock.lines.forEachIndexed { index, line ->
                         translator.translate(line.text).addOnCompleteListener {
@@ -169,6 +154,7 @@ class StartViewModel: ViewModel() {
                                 )
                             )
                             if (index == textBlock.lines.size - 1) {
+                                setModelDownloading(false)
                                 callback(translatedTextList)
                             }
                         }
@@ -179,54 +165,21 @@ class StartViewModel: ViewModel() {
             }
     }
 
-    fun translateText(
-        text: String,
-        source: String,
-        target: String,
-        callback: (String) -> Unit
-    ) {
-        detectLanguage(text){
-            val options = if (source != Language.getDefaultLanguage().code) {
-                TranslatorOptions.Builder()
-                    .setSourceLanguage(source)
-                    .setTargetLanguage(target)
-                    .build()
-            } else {
-                TranslatorOptions.Builder()
-                    .setSourceLanguage(it)
-                    .setTargetLanguage(target)
-                    .build()
-            }
-
-            val translator = Translation.getClient(options)
-            translator.downloadModelIfNeeded()
-                .addOnSuccessListener {
-                    setModelDownloading(false)
-                    translator.translate(text).addOnCompleteListener {
-                        callback(it.result)
-                    }
-                }.addOnFailureListener {
-                    it.printStackTrace()
-                }
-        }
-
-    }
-
     private val _startMainEvent = LiveEvent<Boolean>()
     val startMainEvent: LiveData<Boolean> = _startMainEvent
     fun startMain() {
         _startMainEvent.postValue(true)
     }
 
-    private val _openDrawerEvent = LiveEvent<Boolean>()
-    val openDrawerEvent: LiveData<Boolean> = _openDrawerEvent
-    fun openDrawer() {
-        _openDrawerEvent.postValue(true)
-    }
-
-    private val _pickDocumentEvent = LiveEvent<Uri>()
-    val pickDocumentEvent: LiveData<Uri> = _pickDocumentEvent
-    fun pickDocument(uri: Uri){
-        _pickDocumentEvent.value = uri
-    }
+//    private val _openDrawerEvent = LiveEvent<Boolean>()
+//    val openDrawerEvent: LiveData<Boolean> = _openDrawerEvent
+//    fun openDrawer() {
+//        _openDrawerEvent.postValue(true)
+//    }
+//
+//    private val _pickDocumentEvent = LiveEvent<Uri>()
+//    val pickDocumentEvent: LiveData<Uri> = _pickDocumentEvent
+//    fun pickDocument(uri: Uri){
+//        _pickDocumentEvent.value = uri
+//    }
 }
