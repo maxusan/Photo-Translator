@@ -152,4 +152,9 @@ class MainTranslateFragment: Fragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        snackbar.dismiss()
+    }
+
 }

@@ -108,6 +108,8 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
                 text.boundingBox.right = ((text.boundingBox.right * scX) + transX).toInt()
                 text.boundingBox.top = ((text.boundingBox.top * scY) + transY).toInt()
                 text.boundingBox.bottom = ((text.boundingBox.bottom * scY) + transY).toInt()
+                text.boundingBox.top = text.boundingBox.top + text.boundingBox.height() / 20
+                text.boundingBox.bottom = text.boundingBox.bottom - text.boundingBox.height() / 20
                 text.rectScaled = true
             }
 

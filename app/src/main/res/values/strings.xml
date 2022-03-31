@@ -25,4 +25,6 @@
     <string name="select_all">Select all</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
+    <string name="market_url">https://cat-bounce.com</string>
+    <string name="terms_link">https://google.com</string>
 </resources>

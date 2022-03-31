@@ -29,11 +29,12 @@
 
         <ImageButton
             android:id="@+id/close"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/close_button_size"
+            android:layout_height="@dimen/close_button_size"
             android:layout_margin="12dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_close"
+            android:scaleType="fitXY"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:visibility="@{fromHome ? View.GONE : View.VISIBLE}"/>
@@ -64,8 +65,10 @@
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="4dp"
                     android:popupBackground="@drawable/language_background"
-                    android:spinnerMode="dropdown"
-                    android:dropDownHeight="100dp" />
+                    android:spinnerMode="dialog"
+                    android:dropDownHeight="100dp"
+                    android:dropDownVerticalOffset="300dp"
+                    android:maxHeight="300dp" />
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -104,8 +107,9 @@
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="4dp"
                     android:popupBackground="@drawable/language_background"
-                    android:spinnerMode="dropdown"
-                    android:dropDownHeight="100dp" />
+                    android:spinnerMode="dialog"
+                    android:dropDownHeight="100dp"
+                    android:dropDownVerticalOffset="-80dp"/>
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -132,16 +136,17 @@
 
             <ImageButton
                 android:id="@+id/galleryButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/camera_buttons_size"
+                android:layout_height="@dimen/camera_buttons_size"
+                android:scaleType="fitXY"
                 android:layout_gravity="bottom"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_gallery" />
 
             <ImageButton
                 android:id="@+id/photoButton"
-                android:layout_width="84dp"
-                android:layout_height="84dp"
+                android:layout_width="@dimen/capture_button_size"
+                android:layout_height="@dimen/capture_button_size"
                 android:layout_marginHorizontal="16dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/photo"
@@ -150,8 +155,9 @@
 
             <ImageButton
                 android:id="@+id/torchButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/camera_buttons_size"
+                android:layout_height="@dimen/camera_buttons_size"
+                android:scaleType="fitXY"
                 android:layout_gravity="bottom"
                 android:background="@android:color/transparent"
                 android:src="@{torch ? @drawable/ic_torch_on : @drawable/ic_torch_off}" />

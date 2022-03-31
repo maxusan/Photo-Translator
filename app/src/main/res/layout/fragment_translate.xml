@@ -15,11 +15,12 @@
 
         <ImageButton
             android:id="@+id/close"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/close_button_size"
+            android:layout_height="@dimen/close_button_size"
             android:layout_margin="12dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_close"
+            android:scaleType="fitXY"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -34,27 +35,30 @@
 
             <ImageButton
                 android:id="@+id/button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/share_buttons_size"
+                android:layout_height="@dimen/share_buttons_size"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_button_text"
+                android:scaleType="fitXY"
                 app:elevation="8dp" />
 
             <ImageButton
                 android:id="@+id/button_share"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/share_buttons_size"
+                android:layout_height="@dimen/share_buttons_size"
                 android:layout_marginHorizontal="8dp"
                 android:background="@android:color/transparent"
                 android:elevation="8dp"
+                android:scaleType="fitXY"
                 android:src="@drawable/ic_button_share" />
 
             <ImageButton
                 android:id="@+id/button_three_dot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/share_buttons_size"
+                android:layout_height="@dimen/share_buttons_size"
                 android:background="@android:color/transparent"
                 android:elevation="8dp"
+                android:scaleType="fitXY"
                 android:src="@drawable/ic_button_three_dot" />
 
         </LinearLayout>

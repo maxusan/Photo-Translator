@@ -1,12 +1,8 @@
 package com.batit.phototranslator.ui.main
 
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
+import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -19,8 +15,10 @@ import com.batit.phototranslator.BuildConfig
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
+import com.batit.phototranslator.core.util.openLink
 import com.batit.phototranslator.databinding.ActivityMainBinding
 import com.batit.phototranslator.ui.MainViewModel
+import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,13 +46,22 @@ class MainActivity : AppCompatActivity() {
                 else -> hideBottomNav()
             }
         }
+        val menu = binding.navView.menu
+        menu.findItem(R.id.rate).setOnMenuItemClickListener {
+            openLink(getString(R.string.market_url))
+            true
+        }
+        menu.findItem(R.id.terms).setOnMenuItemClickListener {
+            openLink(getString(R.string.terms_link))
+            true
+        }
         viewModel.setPrimaryLanguage(LanguageProvider.getLanguages()[1])
         viewModel.setSecondaryLanguage(LanguageProvider.getLanguages()[2])
-        viewModel.getInDelete().observe(this){
-            if(it && navController.currentDestination!!.id == R.id.history){
+        viewModel.getInDelete().observe(this) {
+            if (it && navController.currentDestination!!.id == R.id.history) {
                 hideBottomNav()
-            }else if(!it && navController.currentDestination!!.id == R.id.history){
-               showBottomNav()
+            } else if (!it && navController.currentDestination!!.id == R.id.history) {
+                showBottomNav()
             }
 
         }

@@ -7,11 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.batit.phototranslator.core.db.PhotoItem
 import com.batit.phototranslator.databinding.FragmentHistoryBinding
 import com.batit.phototranslator.ui.MainViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
@@ -97,12 +101,16 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
     }
 
     override fun click(photoItem: PhotoItem) {
-        kotlin.runCatching {
-            findNavController().navigate(
-                HistoryFragmentDirections.actionHistoryToTranslateFragment2(
-                    Uri.parse(photoItem.photoUri)
+        lifecycleScope.launch(Dispatchers.Main){
+            kotlin.runCatching {
+                findNavController().navigate(
+                    HistoryFragmentDirections.actionHistoryToTranslateFragment2(
+                        Uri.parse(photoItem.photoUri)
+                    )
                 )
-            )
+            }.exceptionOrNull()?.printStackTrace()
+            delay(100)
         }
+
     }
 }

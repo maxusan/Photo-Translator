@@ -4,11 +4,13 @@ import android.content.*
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import com.batit.phototranslator.core.data.Language
@@ -70,6 +72,18 @@ fun Context.getRealPathFromURI( contentUri: Uri): String? {
     }
     cursor!!.close()
     return filePath
+}
+
+fun EditText.showSoftKeyboard(){
+    if (requestFocus()) {
+        val imm: InputMethodManager? =
+            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+        imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+    }
+}
+
+fun Context.openLink(url: String){
+    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }
 
 @BindingAdapter("setPhoto")

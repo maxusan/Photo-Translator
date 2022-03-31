@@ -15,9 +15,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -42,6 +40,7 @@ import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.*
+import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -53,6 +52,9 @@ class MainFragment : Fragment() {
     private lateinit var secondarySpinnerAdapter: ArrayAdapter<Language>
     private lateinit var secondaryLanguages: MutableList<Language>
     private val storage = SimpleStorage(this)
+
+    private lateinit var snackBar: Snackbar
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -126,6 +128,7 @@ class MainFragment : Fragment() {
                 }
         }
     }
+
 
     private val startForProfileImageResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -202,14 +205,10 @@ class MainFragment : Fragment() {
                         "doc", "docx" -> {
                             val `in`: InputStream = FileInputStream(File(path))
                             val document = XWPFDocument(`in`)
-
-
                             val options = XHTMLOptions.create()
                                 .URIResolver(FileURIResolver(File("word/media")))
 
                             val out: OutputStream = ByteArrayOutputStream()
-
-
                             XHTMLConverter.getInstance().convert(document, out, options)
                             val html = out.toString()
                             println(html)
@@ -301,6 +300,15 @@ class MainFragment : Fragment() {
             RecognizerIntent.EXTRA_LANGUAGE_MODEL,
             RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
         )
+        viewModel.getPrimaryLanguage().value?.let {
+            snackBar = if(it.code != Language.getDefaultLanguage().code){
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, it.code)
+                Snackbar.make(binding.root, "Listening: ${it.displayName}", Snackbar.LENGTH_INDEFINITE)
+            }else{
+                Snackbar.make(binding.root, "Listening: ${Locale.getDefault().displayLanguage}", Snackbar.LENGTH_INDEFINITE)
+            }
+        }
+
         intent.putExtra(
             RecognizerIntent.EXTRA_CALLING_PACKAGE,
             requireContext().packageName
@@ -308,7 +316,7 @@ class MainFragment : Fragment() {
 
         val recognizer = SpeechRecognizer
             .createSpeechRecognizer(requireContext())
-        val snackBar = Snackbar.make(binding.root, "Listening", Snackbar.LENGTH_INDEFINITE)
+
         val listener: RecognitionListener = object : RecognitionListener {
             override fun onResults(results: Bundle) {
                 snackBar.dismiss()
@@ -338,12 +346,15 @@ class MainFragment : Fragment() {
             }
 
             override fun onError(error: Int) {
-                snackBar.dismiss()
-                Toast.makeText(
-                    requireContext(),
-                    "Error listening for speech: ${getErrorText(error)}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                kotlin.runCatching {
+                    snackBar.dismiss()
+                    Toast.makeText(
+                        requireContext(),
+                        "Error listening for speech: ${getErrorText(error)}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }.exceptionOrNull()?.printStackTrace()
+
             }
 
             override fun onBeginningOfSpeech() {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="close_button_size">32dp</dimen>
+    <dimen name="camera_buttons_size">56dp</dimen>
+    <dimen name="share_buttons_size">42dp</dimen>
+    <dimen name="capture_button_size">84dp</dimen>
+    <dimen name="text_translate_controls_size">26dp</dimen>
+
+</resources>

@@ -21,9 +21,12 @@ import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.copyTextToClipboard
 import com.batit.phototranslator.core.util.shareText
+import com.batit.phototranslator.core.util.showSoftKeyboard
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
 import com.batit.phototranslator.ui.MainViewModel
 import kotlinx.android.synthetic.main.fragment_text_preview.*
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
 
 class TranslateTextFragment : Fragment() {
@@ -76,6 +79,20 @@ class TranslateTextFragment : Fragment() {
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
         binding.primarySpinner.setSelection(0)
+        binding.ids.setOnClickListener {
+            binding.editText.showSoftKeyboard()
+        }
+        KeyboardVisibilityEvent.setEventListener(
+            requireActivity(),
+            KeyboardVisibilityEventListener {
+                if(it){
+                    binding.ids.isClickable = false
+                    binding.ids.isFocusable = false
+                }else{
+                    binding.ids.isClickable = true
+                    binding.ids.isFocusable = true
+                }
+            })
     }
 
     private fun setupListeners() {

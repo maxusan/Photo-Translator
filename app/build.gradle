@@ -105,4 +105,7 @@ dependencies {
     kapt "androidx.room:room-compiler:2.4.2"
     androidTestImplementation "androidx.room:room-testing:2.4.2"
 
+    //soft keyboard
+    implementation 'net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3'
+
 }
