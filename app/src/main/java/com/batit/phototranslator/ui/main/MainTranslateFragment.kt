@@ -92,6 +92,7 @@ class MainTranslateFragment: Fragment() {
     private fun processText(uri: Uri) {
         kotlin.runCatching {
             requireContext().getImageFromUri(uri) {
+                binding.translateView.setTranslatedText(mutableListOf())
                 binding.translateView.setImage(it)
                 viewModel.detectText(it) {
                     viewModel.translateText(

@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import java.io.File
 
 
 object FileUtils {
@@ -25,11 +26,23 @@ object FileUtils {
                     return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                 }
 
-                // TODO handle non-primary volumes
             } else if (isDownloadsDocument(uri)) {
-                val id = DocumentsContract.getDocumentId(uri)
-                val contentUri: Uri = ContentUris.withAppendedId(
-                    Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
+                val fileName = getFilePath(context, uri)
+                if (fileName != null) {
+                    return Environment.getExternalStorageDirectory()
+                        .toString() + "/Download/" + fileName
+                }
+
+                var id = DocumentsContract.getDocumentId(uri)
+                if (id.startsWith("raw:") || id.startsWith("msf:")) {
+                    id = id.replaceFirst("raw:".toRegex(), "").replaceFirst("msf:".toRegex(), "")
+                    val file = File(id)
+                    if (file.exists()) return id
+                }
+
+                val contentUri = ContentUris.withAppendedId(
+                    Uri.parse("content://downloads/public_downloads"),
+                    java.lang.Long.valueOf(id)
                 )
                 return getDataColumn(context, contentUri, null, null)
             } else if (isMediaDocument(uri)) {
@@ -117,5 +130,25 @@ object FileUtils {
      */
     fun isMediaDocument(uri: Uri): Boolean {
         return "com.android.providers.media.documents" == uri.getAuthority()
+    }
+
+    fun getFilePath(context: Context, uri: Uri?): String? {
+        var cursor: Cursor? = null
+        val projection = arrayOf(
+            MediaStore.MediaColumns.DISPLAY_NAME
+        )
+        try {
+            cursor = context.contentResolver.query(
+                uri!!, projection, null, null,
+                null
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                val index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                return cursor.getString(index)
+            }
+        } finally {
+            cursor?.close()
+        }
+        return null
     }
 }

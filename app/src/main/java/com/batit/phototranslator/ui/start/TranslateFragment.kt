@@ -153,4 +153,9 @@ class TranslateFragment : Fragment() {
             startForCrop.launch(intent)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        snackbar.dismiss()
+    }
 }

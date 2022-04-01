@@ -78,7 +78,7 @@ class TranslateTextFragment : Fragment() {
         )
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
-        binding.primarySpinner.setSelection(0)
+        binding.primarySpinner.setSelection(2)
         binding.ids.setOnClickListener {
             binding.editText.showSoftKeyboard()
         }
