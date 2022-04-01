@@ -54,7 +54,7 @@ class StartViewModel: ViewModel() {
 
     fun getSecondaryLanguage() = secondaryLanguage
 
-    private val detector = FirebaseVision.getInstance().cloudTextRecognizer
+//    private val detector = FirebaseVision.getInstance().cloudTextRecognizer
     val languageIdentifier = LanguageIdentification.getClient()
     private lateinit var image: FirebaseVisionImage
 
@@ -67,6 +67,7 @@ class StartViewModel: ViewModel() {
 
     fun detectText(bitmap: Bitmap, callback: (FirebaseVisionText) -> Unit) {
         image = FirebaseVisionImage.fromBitmap(bitmap)
+        val detector = FirebaseVision.getInstance().cloudTextRecognizer
         detector.processImage(image).addOnSuccessListener { firebaseVisionText ->
             callback(firebaseVisionText)
         }.addOnFailureListener { e ->

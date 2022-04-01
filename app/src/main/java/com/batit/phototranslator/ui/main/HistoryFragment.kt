@@ -24,6 +24,8 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
     private val adapter: HistoryAdapter by lazy { HistoryAdapter(this) }
     private val viewModel: MainViewModel by activityViewModels()
 
+    private var flag: Boolean = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -101,16 +103,21 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
     }
 
     override fun click(photoItem: PhotoItem) {
-        lifecycleScope.launch(Dispatchers.Main){
-            kotlin.runCatching {
-                findNavController().navigate(
-                    HistoryFragmentDirections.actionHistoryToTranslateFragment2(
-                        Uri.parse(photoItem.photoUri)
+        if(!flag){
+            flag = true
+            lifecycleScope.launch(Dispatchers.Main){
+                kotlin.runCatching {
+                    findNavController().navigate(
+                        HistoryFragmentDirections.actionHistoryToTranslateFragment2(
+                            Uri.parse(photoItem.photoUri)
+                        )
                     )
-                )
-            }.exceptionOrNull()?.printStackTrace()
-            delay(100)
+                }.exceptionOrNull()?.printStackTrace()
+                delay(100)
+                flag = false
+            }
         }
+
 
     }
 }

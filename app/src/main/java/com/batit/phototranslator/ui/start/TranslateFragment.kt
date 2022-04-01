@@ -22,6 +22,7 @@ import com.batit.phototranslator.core.util.getImageFromUri
 import com.batit.phototranslator.databinding.FragmentTranslateBinding
 import com.batit.phototranslator.ui.MainViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.util.*
@@ -38,6 +39,8 @@ class TranslateFragment : Fragment() {
     private var modelDownloading: Boolean = true
 
     private lateinit var snackbar: Snackbar
+
+    private val recognizedText: FirebaseVisionText? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +61,7 @@ class TranslateFragment : Fragment() {
             }
             modelDownloading = it
         }
-        processText(translateArgs.imageUri)
+
         binding.buttonText.setOnClickListener {
             if (modelDownloading) {
                 Toast.makeText(
@@ -73,9 +76,6 @@ class TranslateFragment : Fragment() {
         binding.buttonThreeDot.setOnClickListener {
             showMenu(it)
         }
-//        viewModel.getModelDownloading().observe(viewLifecycleOwner) {
-//            binding.downloading = !it
-//        }
         binding.buttonShare.setOnClickListener {
             val path = SaveManager.saveImage(requireContext(), binding.translateView.getImageWithTranslate())
             val uri = FileProvider.getUriForFile(requireContext(), requireContext().packageName + ".fileprovider", File(path))
@@ -87,6 +87,7 @@ class TranslateFragment : Fragment() {
         binding.close.setOnClickListener {
             viewModel.startMain()
         }
+        processText(translateArgs.imageUri)
     }
 
     private fun processText(uri: Uri) {
