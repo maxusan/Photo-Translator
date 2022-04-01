@@ -1,6 +1,7 @@
 package com.batit.phototranslator.ui.main
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -15,16 +16,19 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.anggrayudi.storage.SimpleStorage
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.FileUtils
 import com.batit.phototranslator.core.data.Language
+import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.core.db.PhotoItem
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.core.util.getMimeType
@@ -40,7 +44,6 @@ import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.*
-import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -51,7 +54,6 @@ class MainFragment : Fragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var secondarySpinnerAdapter: ArrayAdapter<Language>
     private lateinit var secondaryLanguages: MutableList<Language>
-    private val storage = SimpleStorage(this)
 
     private lateinit var snackBar: Snackbar
 
@@ -139,11 +141,16 @@ class MainFragment : Fragment() {
                     val fileUri = data?.data!!
                     saveImage(fileUri)
                     kotlin.runCatching {
-                        findNavController().navigate(MainFragmentDirections.actionHomeToTranslateFragment2(fileUri))
+                        findNavController().navigate(
+                            MainFragmentDirections.actionHomeToTranslateFragment2(
+                                fileUri
+                            )
+                        )
                     }
                 }
                 ImagePicker.RESULT_ERROR -> {
-                    Toast.makeText(requireContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), ImagePicker.getError(data), Toast.LENGTH_SHORT)
+                        .show()
                 }
                 else -> {
                     Toast.makeText(requireContext(), "Task Cancelled", Toast.LENGTH_SHORT).show()
@@ -216,8 +223,12 @@ class MainFragment : Fragment() {
                         else -> {}
                     }
                     Log.e("logs", parsedText)
-                    if(parsedText.isNotBlank()){
-                        findNavController().navigate(MainFragmentDirections.actionHomeToTranslateTextFragment(parsedText))
+                    if (parsedText.isNotBlank()) {
+                        findNavController().navigate(
+                            MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                parsedText
+                            )
+                        )
                     }
                 }.exceptionOrNull()?.printStackTrace()
 
@@ -295,89 +306,106 @@ class MainFragment : Fragment() {
     }
 
     private fun startSpeechRecognition() {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-        intent.putExtra(
-            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        )
-        viewModel.getPrimaryLanguage().value?.let {
-            snackBar = if(it.code != Language.getDefaultLanguage().code){
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, it.code)
-                Snackbar.make(binding.root, "Listening: ${it.displayName}", Snackbar.LENGTH_INDEFINITE)
-            }else{
-                Snackbar.make(binding.root, "Listening: ${Locale.getDefault().displayLanguage}", Snackbar.LENGTH_INDEFINITE)
-            }
-        }
+        val builderSingle: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+//        builderSingle.setIcon(R.drawable.ic_launcher)
+        builderSingle.setTitle("Select language")
 
-        intent.putExtra(
-            RecognizerIntent.EXTRA_CALLING_PACKAGE,
-            requireContext().packageName
-        )
+        val arrayAdapter =
+            ArrayAdapter<Language>(requireContext(), android.R.layout.select_dialog_singlechoice)
+        arrayAdapter.addAll(LanguageProvider.getLanguages())
 
-        val recognizer = SpeechRecognizer
-            .createSpeechRecognizer(requireContext())
+        builderSingle.setNegativeButton("cancel",
+            DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() })
 
-        val listener: RecognitionListener = object : RecognitionListener {
-            override fun onResults(results: Bundle) {
-                snackBar.dismiss()
-                val voiceResults = results
-                    .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                if (voiceResults == null) {
-                    println("No voice results")
-                } else {
-                    var text: String = ""
-                    voiceResults.forEach {
-                        text += it + "\n"
+        builderSingle.setAdapter(arrayAdapter,
+            DialogInterface.OnClickListener { dialog, which ->
+                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                intent.putExtra(
+                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                )
+                viewModel.setPrimaryLanguage(arrayAdapter.getItem(which)!!)
+
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, arrayAdapter.getItem(which)!!.code)
+                snackBar = Snackbar.make(
+                    binding.root,
+                    "Listening: ${arrayAdapter.getItem(which)!!.displayName}",
+                    Snackbar.LENGTH_INDEFINITE
+                )
+
+                intent.putExtra(
+                    RecognizerIntent.EXTRA_CALLING_PACKAGE,
+                    requireContext().packageName
+                )
+
+                val recognizer = SpeechRecognizer
+                    .createSpeechRecognizer(requireContext())
+
+                val listener: RecognitionListener = object : RecognitionListener {
+                    override fun onResults(results: Bundle) {
+                        snackBar.dismiss()
+                        val voiceResults = results
+                            .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        if (voiceResults == null) {
+                            println("No voice results")
+                        } else {
+                            var text: String = ""
+                            voiceResults.forEach {
+                                text += it + "\n"
+                            }
+
+                            kotlin.runCatching {
+                                findNavController().navigate(
+                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                        text
+                                    )
+                                )
+                            }
+                        }
                     }
 
-                    kotlin.runCatching {
-                        findNavController().navigate(
-                            MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                text
-                            )
-                        )
+                    override fun onReadyForSpeech(params: Bundle) {
+                        println("Ready for speech")
+                        snackBar.show()
                     }
-                }
-            }
 
-            override fun onReadyForSpeech(params: Bundle) {
-                println("Ready for speech")
-                snackBar.show()
-            }
+                    override fun onError(error: Int) {
+                        kotlin.runCatching {
+                            snackBar.dismiss()
+                            Toast.makeText(
+                                requireContext(),
+                                "Error listening for speech: ${getErrorText(error)}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }.exceptionOrNull()?.printStackTrace()
 
-            override fun onError(error: Int) {
-                kotlin.runCatching {
-                    snackBar.dismiss()
-                    Toast.makeText(
-                        requireContext(),
-                        "Error listening for speech: ${getErrorText(error)}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }.exceptionOrNull()?.printStackTrace()
+                    }
 
-            }
-
-            override fun onBeginningOfSpeech() {
+                    override fun onBeginningOfSpeech() {
 //                Toast.makeText(requireContext(), "Listening", Toast.LENGTH_SHORT).show()
 
-            }
+                    }
 
-            override fun onBufferReceived(buffer: ByteArray) {
-            }
+                    override fun onBufferReceived(buffer: ByteArray) {
+                    }
 
-            override fun onEndOfSpeech() {
-            }
+                    override fun onEndOfSpeech() {
+                    }
 
-            override fun onEvent(eventType: Int, params: Bundle) {
-            }
+                    override fun onEvent(eventType: Int, params: Bundle) {
+                    }
 
-            override fun onPartialResults(partialResults: Bundle) {
-            }
+                    override fun onPartialResults(partialResults: Bundle) {
+                    }
 
-            override fun onRmsChanged(rmsdB: Float) {
-            }
-        }
-        recognizer.setRecognitionListener(listener)
-        recognizer.startListening(intent)
+                    override fun onRmsChanged(rmsdB: Float) {
+                    }
+                }
+                recognizer.setRecognitionListener(listener)
+                recognizer.startListening(intent)
+            })
+
+        builderSingle.show()
+
     }
 }

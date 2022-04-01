@@ -3,10 +3,12 @@ package com.batit.phototranslator.ui.start
 import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.ContentValues
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,13 +24,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.databinding.FragmentCameraBinding
-import com.batit.phototranslator.ui.MainViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.android.material.snackbar.Snackbar
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.text.SimpleDateFormat
@@ -52,6 +53,10 @@ class CameraFragment : Fragment() {
 
     private lateinit var secondaryLanguages: MutableList<Language>
     private lateinit var primaryLanguages: MutableList<Language>
+
+    private var permissionsSnackbar: Snackbar? = null
+
+    private var flag: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -158,48 +163,54 @@ class CameraFragment : Fragment() {
     }
 
     private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX")
-            }
-        }
-
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(
-                requireContext().contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues
-            )
-            .build()
-
-        val takePicture = imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(requireContext()),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e("logs", "Photo capture failed: ${exc.message}", exc)
+        if (!flag) {
+            flag = true
+            val imageCapture = imageCapture ?: return
+            val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis())
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                    put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX")
                 }
+            }
 
-                override fun
-                        onImageSaved(output: ImageCapture.OutputFileResults) {
-                    kotlin.runCatching {
-                        val folder = File(requireContext().cacheDir.path + "CameraX/")
-                        if (!folder.exists()) {
-                            folder.mkdir()
+            val outputOptions = ImageCapture.OutputFileOptions
+                .Builder(
+                    requireContext().contentResolver,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues
+                )
+                .build()
+
+            val takePicture = imageCapture.takePicture(
+                outputOptions,
+                ContextCompat.getMainExecutor(requireContext()),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(exc: ImageCaptureException) {
+                        Log.e("logs", "Photo capture failed: ${exc.message}", exc)
+                        flag = false
+                    }
+
+                    override fun
+                            onImageSaved(output: ImageCapture.OutputFileResults) {
+                        kotlin.runCatching {
+                            val folder = File(requireContext().cacheDir.path + "CameraX/")
+                            if (!folder.exists()) {
+                                folder.mkdir()
+                            }
+                            val imageFileDest = File(folder, UUID.randomUUID().toString() + ".jpg")
+                            val intent = UCrop.of(output.savedUri!!, Uri.fromFile(imageFileDest))
+                                .getIntent(requireActivity())
+                            startForCrop.launch(intent)
+                            flag = false
                         }
-                        val imageFileDest = File(folder, UUID.randomUUID().toString() + ".jpg")
-                        val intent = UCrop.of(output.savedUri!!, Uri.fromFile(imageFileDest))
-                            .getIntent(requireActivity())
-                        startForCrop.launch(intent)
                     }
                 }
-            }
-        )
+            )
+        }
+
     }
 
 
@@ -213,9 +224,22 @@ class CameraFragment : Fragment() {
     }
 
     private fun checkPermissionsForCamera() {
+        permissionsSnackbar =
+            Snackbar.make(binding.root, "Camera permission in needed", Snackbar.LENGTH_INDEFINITE)
+                .setAction(
+                    "Open settings"
+                ) {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    val uri = Uri.fromParts("package", requireContext().packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
         requireContext().checkPermissions(android.Manifest.permission.CAMERA) {
             if (it) {
                 startCamera()
+                permissionsSnackbar?.dismiss()
+            } else {
+                permissionsSnackbar?.show()
             }
         }
     }
@@ -295,5 +319,17 @@ class CameraFragment : Fragment() {
 
     companion object {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireContext().checkPermissions(android.Manifest.permission.CAMERA) {
+            if (it) {
+                permissionsSnackbar?.dismiss()
+                startCamera()
+            } else {
+                permissionsSnackbar?.show()
+            }
+        }
     }
 }

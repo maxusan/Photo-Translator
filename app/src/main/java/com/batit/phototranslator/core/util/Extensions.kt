@@ -10,7 +10,6 @@ import android.webkit.MimeTypeMap
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import com.batit.phototranslator.core.data.Language
@@ -32,6 +31,7 @@ fun Context.checkPermissions(vararg permissions: String, granted: (Boolean) -> U
         .withPermissions(
             *permissions
         ).withListener(object : MultiplePermissionsListener {
+
             override fun onPermissionsChecked(report: MultiplePermissionsReport) {
                 granted(report.areAllPermissionsGranted())
             }
@@ -40,6 +40,7 @@ fun Context.checkPermissions(vararg permissions: String, granted: (Boolean) -> U
                 permissions: List<PermissionRequest?>?,
                 token: PermissionToken?
             ) {
+                token?.continuePermissionRequest()
             }
         }).check()
 }
@@ -55,7 +56,7 @@ fun Fragment.shareText(text: String) {
     startActivity(Intent.createChooser(intent, "Share"))
 }
 
-fun Context.getRealPathFromURI( contentUri: Uri): String? {
+fun Context.getRealPathFromURI(contentUri: Uri): String? {
     val column = arrayOf(MediaStore.Images.ImageColumns.DATA)
 
     val cursor = contentResolver.query(
@@ -74,7 +75,7 @@ fun Context.getRealPathFromURI( contentUri: Uri): String? {
     return filePath
 }
 
-fun EditText.showSoftKeyboard(){
+fun EditText.showSoftKeyboard() {
     if (requestFocus()) {
         val imm: InputMethodManager? =
             context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
@@ -82,12 +83,12 @@ fun EditText.showSoftKeyboard(){
     }
 }
 
-fun Context.openLink(url: String){
+fun Context.openLink(url: String) {
     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 }
 
 @BindingAdapter("setPhoto")
-fun ShapeableImageView.setPhoto(photoItem: PhotoItem){
+fun ShapeableImageView.setPhoto(photoItem: PhotoItem) {
     Glide.with(this).load(photoItem.photoUri).into(this)
 }
 
@@ -96,7 +97,7 @@ fun Uri.getMimeType(context: Context): String? {
         val mime = MimeTypeMap.getSingleton()
         mime.getExtensionFromMimeType(context.contentResolver.getType(this))
     } else {
-         MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(File(this.path)).toString())
+        MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(File(this.path)).toString())
     }
     return extension
 }

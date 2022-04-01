@@ -26,6 +26,15 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
 
     private var flag: Boolean = false
 
+    private var resume: Boolean = false
+
+    override fun onResume() {
+        super.onResume()
+        resume = true
+    }
+
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,9 +47,12 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
         super.onViewCreated(view, savedInstanceState)
         binding.photoList.adapter = adapter
         viewModel.getPhotos().observe(viewLifecycleOwner) {
-            adapter.submitList(null)
+            if(!resume){
+                adapter.submitList(null)
+            }
             adapter.submitList(it.asReversed())
             viewModel.setInDelete(false)
+            resume = false
         }
         val itemTouchHelper = ItemTouchHelper(
             SwipeToDeleteCallback(
@@ -63,6 +75,7 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
             }
             viewModel.setInDelete(true)
             adapter.submitList(currntList)
+            adapter.notifyDataSetChanged()
         }
         binding.delete.setOnClickListener {
             val currntList = adapter.currentList.toMutableList().filter { item -> item.photoPicked }
@@ -99,7 +112,7 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
         viewModel.setInDelete(inDelete)
 
         adapter.submitList(currList)
-//        adapter.notifyItemChanged(idx)
+        adapter.notifyItemChanged(idx)
     }
 
     override fun click(photoItem: PhotoItem) {

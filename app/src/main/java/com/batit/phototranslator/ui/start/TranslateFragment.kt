@@ -94,6 +94,7 @@ class TranslateFragment : Fragment() {
         kotlin.runCatching {
             requireContext().getImageFromUri(uri) {
                 binding.translateView.setImage(it)
+                binding.translateView.setTranslatedText(mutableListOf())
                 viewModel.detectText(it) {
                     viewModel.translateText(
                         it,

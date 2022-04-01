@@ -16,6 +16,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent" />
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/primary_spinner"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="4dp"
+            android:popupBackground="@drawable/language_background"
+            android:spinnerMode="dialog"
+            android:dropDownHeight="100dp"
+            android:dropDownVerticalOffset="300dp"
+            android:maxHeight="300dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <LinearLayout
             android:layout_width="match_parent"
