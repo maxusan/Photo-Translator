@@ -20,6 +20,7 @@ import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.copyTextToClipboard
+import com.batit.phototranslator.core.util.hideKeyboard
 import com.batit.phototranslator.core.util.shareText
 import com.batit.phototranslator.core.util.showSoftKeyboard
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
@@ -70,7 +71,7 @@ class TranslateTextFragment : Fragment() {
         )
         secondarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.secondarySpinner.adapter = secondarySpinnerAdapter
-        binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(Language("en")))
+        binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(viewModel.getSecondaryLanguage().value!!))
 
         primarySpinnerAdapter = ArrayAdapter(
             requireContext(),
@@ -78,7 +79,7 @@ class TranslateTextFragment : Fragment() {
         )
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
-        binding.primarySpinner.setSelection(2)
+        binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(viewModel.getPrimaryLanguage().value!!))
         binding.ids.setOnClickListener {
             binding.editText.showSoftKeyboard()
         }
@@ -224,6 +225,11 @@ class TranslateTextFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().hideKeyboard()
     }
 
 

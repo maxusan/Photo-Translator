@@ -24,7 +24,10 @@ class StartActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
         viewModel.startMainEvent.observe(this){
-            startActivity(Intent(this, MainActivity::class.java))
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("first", viewModel.getPrimaryLanguage().value)
+            intent.putExtra("second", viewModel.getSecondaryLanguage().value)
+            startActivity(intent)
             finish()
         }
     }

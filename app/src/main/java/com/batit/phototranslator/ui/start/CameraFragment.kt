@@ -165,7 +165,7 @@ class CameraFragment : Fragment() {
     private fun takePhoto() {
         if (!flag) {
             flag = true
-            val imageCapture = imageCapture ?: return
+//            val imageCapture = imageCapture ?: return
             val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                 .format(System.currentTimeMillis())
             val contentValues = ContentValues().apply {
@@ -184,12 +184,13 @@ class CameraFragment : Fragment() {
                 )
                 .build()
 
-            val takePicture = imageCapture.takePicture(
+            val takePicture = imageCapture!!.takePicture(
                 outputOptions,
                 ContextCompat.getMainExecutor(requireContext()),
                 object : ImageCapture.OnImageSavedCallback {
                     override fun onError(exc: ImageCaptureException) {
                         Log.e("logs", "Photo capture failed: ${exc.message}", exc)
+                        exc.printStackTrace()
                         flag = false
                     }
 
@@ -307,6 +308,7 @@ class CameraFragment : Fragment() {
 
             } catch (exc: Exception) {
                 Log.e("logs", "Use case binding failed", exc)
+                exc.printStackTrace()
             }
 
         }, ContextCompat.getMainExecutor(requireContext()))

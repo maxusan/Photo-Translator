@@ -55,8 +55,8 @@ class MainActivity : AppCompatActivity() {
             openLink(getString(R.string.terms_link))
             true
         }
-        viewModel.setPrimaryLanguage(LanguageProvider.getLanguages()[1])
-        viewModel.setSecondaryLanguage(LanguageProvider.getLanguages()[2])
+        viewModel.setPrimaryLanguage(intent.getSerializableExtra("first")!! as Language)
+        viewModel.setSecondaryLanguage(intent.getSerializableExtra("second")!! as Language)
         viewModel.getInDelete().observe(this) {
             if (it && navController.currentDestination!!.id == R.id.history) {
                 hideBottomNav()

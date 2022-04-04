@@ -21,11 +21,12 @@ import androidx.annotation.DrawableRes
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
 import com.batit.phototranslator.BR
+import java.io.Serializable
 import java.util.*
 
 class Language(
     val code: String = "",
-    @DrawableRes val icon: Int = 0) : Comparable<Language>, BaseObservable() {
+    @DrawableRes val icon: Int = 0) : Comparable<Language>, BaseObservable(), Serializable {
 
     val displayName: String
         get() = Locale(code).displayName

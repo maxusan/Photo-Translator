@@ -24,6 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.FileUtils
@@ -42,6 +43,9 @@ import com.tom_roush.pdfbox.text.PDFTextStripper
 import fr.opensagres.poi.xwpf.converter.core.FileURIResolver
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.*
 import java.text.SimpleDateFormat
@@ -78,7 +82,7 @@ class MainFragment : Fragment() {
         binding.appBarMain.secondarySpinner.adapter = secondarySpinnerAdapter
         binding.appBarMain.secondarySpinner.setSelection(
             secondarySpinnerAdapter.getPosition(
-                Language("en")
+                requireActivity().intent.getSerializableExtra("second") as Language
             )
         )
         binding.appBarMain.secondarySpinner.onItemSelectedListener =
@@ -176,62 +180,55 @@ class MainFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             val resultCode = result.resultCode
             if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(requireContext(), "Document reading...", Toast.LENGTH_SHORT).show()
                 kotlin.runCatching {
-                    val data = result.data!!.data!!
-                    var parsedText: String = ""
-                    val path = FileUtils.getPath(requireContext(), data)
-                    val file = File(path)
-                    when (data.getMimeType(requireContext())) {
-                        "pdf" -> {
-                            PDFBoxResourceLoader.init(requireContext())
-                            val inputStream: InputStream =
-                                requireContext().contentResolver.openInputStream(data)!!
+                    lifecycleScope.launch(Dispatchers.IO){
+                        val data = result.data!!.data!!
+                        var parsedText: String = ""
+                        val path = FileUtils.getPath(requireContext(), data)
+                        val file = File(path)
+                        when (data.getMimeType(requireContext())) {
+                            "pdf" -> {
+                                PDFBoxResourceLoader.init(requireContext())
+                                val inputStream: InputStream =
+                                    requireContext().contentResolver.openInputStream(data)!!
 
-                            val document = PDDocument.load(inputStream)
-                            try {
-                                val pdfStripper = PDFTextStripper()
-                                pdfStripper.startPage = 0
-                                pdfStripper.endPage = document.numberOfPages
-                                parsedText = pdfStripper.getText(document)
-
-                            } catch (e: IOException) {
-                                e.printStackTrace()
-                            } finally {
+                                val document = PDDocument.load(inputStream)
                                 try {
-                                    document?.close()
+                                    val pdfStripper = PDFTextStripper()
+                                    pdfStripper.startPage = 0
+                                    pdfStripper.endPage = document.numberOfPages
+                                    parsedText = pdfStripper.getText(document)
+
                                 } catch (e: IOException) {
                                     e.printStackTrace()
+                                } finally {
+                                    try {
+                                        document?.close()
+                                    } catch (e: IOException) {
+                                        e.printStackTrace()
+                                    }
                                 }
+
                             }
-
+                            "txt" -> {
+                                val reader = FileReader(file.path)
+                                parsedText = reader.readText()
+                            }
+                            else -> {}
                         }
-                        "txt" -> {
-                            val reader = FileReader(file.path)
-                            parsedText = reader.readText()
+//                        Log.e("logs", parsedText)
+                        if (parsedText.isNotBlank()) {
+                            withContext(Dispatchers.Main){
+                                findNavController().navigate(
+                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                        parsedText
+                                    )
+                                )
+                            }
                         }
-                        "doc", "docx" -> {
-                            val `in`: InputStream = FileInputStream(File(path))
-                            val document = XWPFDocument(`in`)
-                            val options = XHTMLOptions.create()
-                                .URIResolver(FileURIResolver(File("word/media")))
-
-                            val out: OutputStream = ByteArrayOutputStream()
-                            XHTMLConverter.getInstance().convert(document, out, options)
-                            val html = out.toString()
-                            println(html)
-                        }
-                        else -> {}
-                    }
-                    Log.e("logs", parsedText)
-                    if (parsedText.isNotBlank()) {
-                        findNavController().navigate(
-                            MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                parsedText
-                            )
-                        )
                     }
                 }.exceptionOrNull()?.printStackTrace()
-
             }
         }
 
