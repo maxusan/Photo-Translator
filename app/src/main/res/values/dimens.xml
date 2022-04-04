@@ -6,5 +6,7 @@
     <dimen name="share_buttons_size">42dp</dimen>
     <dimen name="capture_button_size">84dp</dimen>
     <dimen name="text_translate_controls_size">26dp</dimen>
+    <dimen name="translated_text_size">14sp</dimen>
+    <dimen name="lang_picker_height">28dp</dimen>
 
 </resources>

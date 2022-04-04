@@ -85,6 +85,7 @@
                 android:layout_margin="12dp"
                 android:fontFamily="@font/pop_reg"
                 android:textColor="@color/main_text_color"
+                android:textSize="@dimen/translated_text_size"
                 app:layout_constraintTop_toBottomOf="@id/top_bar" />
         </ScrollView>
 

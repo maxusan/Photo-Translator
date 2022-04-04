@@ -23,6 +23,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
@@ -31,6 +32,10 @@ import com.batit.phototranslator.databinding.FragmentCameraBinding
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -114,7 +119,18 @@ class CameraFragment : Fragment() {
             launchGalleryPicker()
         }
         binding.photoButton.setOnClickListener {
-            takePhoto()
+            requireContext().checkPermissions(android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE){
+                lifecycleScope.launch(Dispatchers.IO){
+                    withContext(Dispatchers.Main){
+                        binding.photoButton.isClickable = false
+                        takePhoto()
+                    }
+                    delay(300)
+                    withContext(Dispatchers.Main){
+                        binding.photoButton.isClickable = true
+                    }
+                }
+            }
         }
         binding.primarySpinner.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -163,11 +179,13 @@ class CameraFragment : Fragment() {
     }
 
     private fun takePhoto() {
-        if (!flag) {
-            flag = true
+        Log.e("logs", "takePhoto()")
+//        if (!flag) {
+//            flag = true
 //            val imageCapture = imageCapture ?: return
             val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                 .format(System.currentTimeMillis())
+            Log.e("logs", "name")
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -175,7 +193,7 @@ class CameraFragment : Fragment() {
                     put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX")
                 }
             }
-
+            Log.e("logs", "contentValues")
             val outputOptions = ImageCapture.OutputFileOptions
                 .Builder(
                     requireContext().contentResolver,
@@ -183,19 +201,22 @@ class CameraFragment : Fragment() {
                     contentValues
                 )
                 .build()
+            Log.e("logs", "outputOptions")
 
             val takePicture = imageCapture!!.takePicture(
                 outputOptions,
                 ContextCompat.getMainExecutor(requireContext()),
                 object : ImageCapture.OnImageSavedCallback {
                     override fun onError(exc: ImageCaptureException) {
+                        Log.e("logs", "onError")
                         Log.e("logs", "Photo capture failed: ${exc.message}", exc)
                         exc.printStackTrace()
-                        flag = false
+//                        flag = false
                     }
 
                     override fun
                             onImageSaved(output: ImageCapture.OutputFileResults) {
+                        Log.e("logs", "onImageSaved")
                         kotlin.runCatching {
                             val folder = File(requireContext().cacheDir.path + "CameraX/")
                             if (!folder.exists()) {
@@ -203,14 +224,14 @@ class CameraFragment : Fragment() {
                             }
                             val imageFileDest = File(folder, UUID.randomUUID().toString() + ".jpg")
                             val intent = UCrop.of(output.savedUri!!, Uri.fromFile(imageFileDest))
-                                .getIntent(requireActivity())
+                                .getIntent(requireActivity()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                             startForCrop.launch(intent)
-                            flag = false
+//                            flag = false
                         }
                     }
                 }
             )
-        }
+//        }
 
     }
 

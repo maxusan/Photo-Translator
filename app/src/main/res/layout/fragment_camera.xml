@@ -42,7 +42,7 @@
         <LinearLayout
             android:id="@+id/language_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/lang_picker_height"
             android:layout_margin="16dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent">
@@ -68,7 +68,8 @@
                     android:spinnerMode="dialog"
                     android:dropDownHeight="100dp"
                     android:dropDownVerticalOffset="300dp"
-                    android:maxHeight="300dp" />
+                    android:maxHeight="300dp"
+                    android:textSize="@dimen/translated_text_size"/>
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -86,6 +87,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_gravity="center_vertical"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_swap" />
 
@@ -109,7 +111,8 @@
                     android:popupBackground="@drawable/language_background"
                     android:spinnerMode="dialog"
                     android:dropDownHeight="100dp"
-                    android:dropDownVerticalOffset="-80dp"/>
+                    android:dropDownVerticalOffset="-80dp"
+                    android:textSize="@dimen/translated_text_size"/>
 
                 <ImageView
                     android:layout_width="wrap_content"

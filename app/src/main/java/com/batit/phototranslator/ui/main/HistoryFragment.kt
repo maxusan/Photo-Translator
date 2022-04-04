@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.db.PhotoItem
 import com.batit.phototranslator.databinding.FragmentHistoryBinding
 import com.batit.phototranslator.ui.MainViewModel
@@ -120,6 +121,7 @@ class HistoryFragment : Fragment(), HistoryAdapter.PhotoClicker {
             flag = true
             lifecycleScope.launch(Dispatchers.Main){
                 kotlin.runCatching {
+                    viewModel.setPrimaryLanguage(Language.getDefaultLanguage())
                     findNavController().navigate(
                         HistoryFragmentDirections.actionHistoryToTranslateFragment2(
                             Uri.parse(photoItem.photoUri)

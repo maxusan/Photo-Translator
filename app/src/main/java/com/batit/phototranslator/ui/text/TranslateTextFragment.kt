@@ -1,9 +1,5 @@
 package com.batit.phototranslator.ui.text
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -25,7 +20,6 @@ import com.batit.phototranslator.core.util.shareText
 import com.batit.phototranslator.core.util.showSoftKeyboard
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
 import com.batit.phototranslator.ui.MainViewModel
-import kotlinx.android.synthetic.main.fragment_text_preview.*
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
@@ -42,6 +36,8 @@ class TranslateTextFragment : Fragment() {
 
     private val textArguments: TranslateTextFragmentArgs by navArgs()
 
+    private var translatedText: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,9 +50,11 @@ class TranslateTextFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupSpinners()
         setupListeners()
-        if(textArguments.text != null){
+        if (textArguments.text != null) {
             binding.editText.setText(textArguments.text)
         }
+        binding.text.text = translatedText
+
     }
 
     private fun setupSpinners() {
@@ -86,10 +84,10 @@ class TranslateTextFragment : Fragment() {
         KeyboardVisibilityEvent.setEventListener(
             requireActivity(),
             KeyboardVisibilityEventListener {
-                if(it){
+                if (it) {
                     binding.ids.isClickable = false
                     binding.ids.isFocusable = false
-                }else{
+                } else {
                     binding.ids.isClickable = true
                     binding.ids.isFocusable = true
                 }
@@ -190,14 +188,22 @@ class TranslateTextFragment : Fragment() {
         binding.preview1.setOnClickListener {
             binding.editText.text?.let {
                 if (it.toString().isNotBlank() && it.toString() != "null") {
-                    findNavController().navigate(TranslateTextFragmentDirections.actionTranslateTextFragmentToTextPreviewFragment(it.toString()))
+                    findNavController().navigate(
+                        TranslateTextFragmentDirections.actionTranslateTextFragmentToTextPreviewFragment(
+                            it.toString()
+                        )
+                    )
                 }
             }
         }
         binding.preview2.setOnClickListener {
             binding.text.text?.let {
                 if (it.toString().isNotBlank() && it.toString() != "null") {
-                    findNavController().navigate(TranslateTextFragmentDirections.actionTranslateTextFragmentToTextPreviewFragment(it.toString()))
+                    findNavController().navigate(
+                        TranslateTextFragmentDirections.actionTranslateTextFragmentToTextPreviewFragment(
+                            it.toString()
+                        )
+                    )
                 }
             }
         }
@@ -210,7 +216,6 @@ class TranslateTextFragment : Fragment() {
     }
 
 
-
     private fun translateText() {
         kotlin.runCatching {
             binding.editText.text.toString()?.let {
@@ -220,7 +225,8 @@ class TranslateTextFragment : Fragment() {
                         viewModel.getPrimaryLanguage().value!!.code,
                         viewModel.getSecondaryLanguage().value!!.code
                     ) {
-                        binding.text.text = it
+                        translatedText = it
+                        binding.text.text = translatedText
                     }
                 }
             }

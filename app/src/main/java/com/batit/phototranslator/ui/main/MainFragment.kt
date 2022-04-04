@@ -36,6 +36,7 @@ import com.batit.phototranslator.core.util.getMimeType
 import com.batit.phototranslator.databinding.FragmentMainBinding
 import com.batit.phototranslator.ui.MainViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
 import com.google.android.material.snackbar.Snackbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -60,8 +61,9 @@ class MainFragment : Fragment() {
     private lateinit var secondaryLanguages: MutableList<Language>
 
     private lateinit var snackBar: Snackbar
+    private  var readingSnackbar: Snackbar? = null
 
-    override fun onCreateView(
+        override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
@@ -145,6 +147,7 @@ class MainFragment : Fragment() {
                     val fileUri = data?.data!!
                     saveImage(fileUri)
                     kotlin.runCatching {
+                        viewModel.setPrimaryLanguage(Language.getDefaultLanguage())
                         findNavController().navigate(
                             MainFragmentDirections.actionHomeToTranslateFragment2(
                                 fileUri
@@ -180,8 +183,9 @@ class MainFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             val resultCode = result.resultCode
             if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(requireContext(), "Document reading...", Toast.LENGTH_SHORT).show()
+                readingSnackbar = Snackbar.make(requireView(), "Document reading...", Snackbar.LENGTH_INDEFINITE)
                 kotlin.runCatching {
+                    readingSnackbar?.show()
                     lifecycleScope.launch(Dispatchers.IO){
                         val data = result.data!!.data!!
                         var parsedText: String = ""
@@ -220,15 +224,26 @@ class MainFragment : Fragment() {
 //                        Log.e("logs", parsedText)
                         if (parsedText.isNotBlank()) {
                             withContext(Dispatchers.Main){
-                                findNavController().navigate(
-                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                        parsedText
+                                kotlin.runCatching {
+                                    viewModel.setPrimaryLanguage(Language.getDefaultLanguage())
+                                    findNavController().navigate(
+                                        MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                            parsedText
+                                        )
                                     )
-                                )
+                                }.exceptionOrNull()?.printStackTrace()
+
                             }
                         }
+                        withContext(Dispatchers.Main){
+                            readingSnackbar?.dismiss()
+                        }
                     }
-                }.exceptionOrNull()?.printStackTrace()
+                }.exceptionOrNull()?.let{
+                    it.printStackTrace()
+                    Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
         }
 
@@ -404,5 +419,10 @@ class MainFragment : Fragment() {
 
         builderSingle.show()
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        readingSnackbar?.dismiss()
     }
 }
