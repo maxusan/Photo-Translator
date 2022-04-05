@@ -42,7 +42,7 @@ fun Context.checkPermissions(vararg permissions: String, granted: (Boolean) -> U
                 permissions: List<PermissionRequest?>?,
                 token: PermissionToken?
             ) {
-                token?.continuePermissionRequest()
+                //token?.continuePermissionRequest()
             }
         }).check()
 }

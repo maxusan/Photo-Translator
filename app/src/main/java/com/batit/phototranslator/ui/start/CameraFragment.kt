@@ -120,14 +120,16 @@ class CameraFragment : Fragment() {
         }
         binding.photoButton.setOnClickListener {
             requireContext().checkPermissions(android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE){
-                lifecycleScope.launch(Dispatchers.IO){
-                    withContext(Dispatchers.Main){
-                        binding.photoButton.isClickable = false
-                        takePhoto()
-                    }
-                    delay(300)
-                    withContext(Dispatchers.Main){
-                        binding.photoButton.isClickable = true
+                if(it){
+                    lifecycleScope.launch(Dispatchers.IO){
+                        withContext(Dispatchers.Main){
+                            binding.photoButton.isClickable = false
+                            takePhoto()
+                        }
+                        delay(300)
+                        withContext(Dispatchers.Main){
+                            binding.photoButton.isClickable = true
+                        }
                     }
                 }
             }
@@ -247,7 +249,7 @@ class CameraFragment : Fragment() {
 
     private fun checkPermissionsForCamera() {
         permissionsSnackbar =
-            Snackbar.make(binding.root, "Camera permission in needed", Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(binding.root, "Camera and storage permission in needed", Snackbar.LENGTH_INDEFINITE)
                 .setAction(
                     "Open settings"
                 ) {
@@ -346,7 +348,7 @@ class CameraFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        requireContext().checkPermissions(android.Manifest.permission.CAMERA) {
+        requireContext().checkPermissions(android.Manifest.permission.CAMERA, android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
             if (it) {
                 permissionsSnackbar?.dismiss()
                 startCamera()

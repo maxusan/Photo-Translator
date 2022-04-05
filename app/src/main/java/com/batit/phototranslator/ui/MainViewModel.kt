@@ -2,7 +2,6 @@ package com.batit.phototranslator.ui
 
 import android.graphics.Bitmap
 import android.graphics.Rect
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -94,18 +93,18 @@ class MainViewModel : ViewModel() {
         modelDownloadTask = translator.downloadModelIfNeeded()
     }
 
-    private fun detectLanguage(text: String, callback: (String) -> Unit) {
+    fun detectLanguage(text: String, callback: (String) -> Unit) {
         languageIdentifier.identifyLanguage(text)
             .addOnSuccessListener { languageCode ->
                 if (languageCode == "und") {
                     Log.i("logs", "Can't identify language.")
+                    callback("")
                 } else {
                     callback(languageCode)
                 }
             }
             .addOnFailureListener {
-                // Model couldn’t be loaded or other internal error.
-                // ...
+                it.printStackTrace()
             }
 
     }
@@ -147,6 +146,7 @@ class MainViewModel : ViewModel() {
         firebaseVisionText: FirebaseVisionText,
         source: String,
         target: String,
+//        recognizedLanguageCallback: (Language?) -> Unit,
         callback: (List<TranslatedText>) -> Unit
     ) {
         val options = if (source != Language.getDefaultLanguage().code) {
@@ -155,8 +155,10 @@ class MainViewModel : ViewModel() {
                 .setTargetLanguage(target)
                 .build()
         } else {
+            val recognizedLanguageCode = detectLanguage(firebaseVisionText)?.languageCode ?: "en"
+//            recognizedLanguageCallback(Language(code = recognizedLanguageCode))
             TranslatorOptions.Builder()
-                .setSourceLanguage(detectLanguage(firebaseVisionText)?.languageCode ?: "en")
+                .setSourceLanguage(recognizedLanguageCode)
                 .setTargetLanguage(target)
                 .build()
         }
@@ -192,38 +194,27 @@ class MainViewModel : ViewModel() {
         target: String,
         callback: (String) -> Unit
     ) {
-        detectLanguage(text){
-            val options = if (source != Language.getDefaultLanguage().code) {
-                TranslatorOptions.Builder()
-                    .setSourceLanguage(source)
-                    .setTargetLanguage(target)
-                    .build()
-            } else {
-                TranslatorOptions.Builder()
-                    .setSourceLanguage(it)
-                    .setTargetLanguage(target)
-                    .build()
-            }
+        val options =
+            TranslatorOptions.Builder()
+                .setSourceLanguage(source)
+                .setTargetLanguage(target)
+                .build()
 
-            val translator = Translation.getClient(options)
-            translator.downloadModelIfNeeded()
-                .addOnSuccessListener {
-                    setModelDownloading(false)
-                    translator.translate(text).addOnCompleteListener {
-                        callback(it.result)
-                    }
-                }.addOnFailureListener {
-                    it.printStackTrace()
+        val translator = Translation.getClient(options)
+        translator.downloadModelIfNeeded()
+            .addOnSuccessListener {
+                setModelDownloading(false)
+                translator.translate(text).addOnCompleteListener {
+                    callback(it.result)
                 }
-        }
+            }.addOnFailureListener {
+                it.printStackTrace()
+            }
+//        }
 
     }
 
     private val _startMainEvent = LiveEvent<Boolean>()
-    val startMainEvent: LiveData<Boolean> = _startMainEvent
-    fun startMain() {
-        _startMainEvent.postValue(true)
-    }
 
     private val _openDrawerEvent = LiveEvent<Boolean>()
     val openDrawerEvent: LiveData<Boolean> = _openDrawerEvent
@@ -231,19 +222,13 @@ class MainViewModel : ViewModel() {
         _openDrawerEvent.postValue(true)
     }
 
-    private val _pickDocumentEvent = LiveEvent<Uri>()
-    val pickDocumentEvent: LiveData<Uri> = _pickDocumentEvent
-    fun pickDocument(uri: Uri){
-        _pickDocumentEvent.value = uri
-    }
-
-    fun insertPhoto(photoItem: PhotoItem){
+    fun insertPhoto(photoItem: PhotoItem) {
         viewModelScope.launch {
             PhotoRepository.insertPhoto(photoItem)
         }
     }
 
-    fun deletePhoto(photoItem: PhotoItem){
+    fun deletePhoto(photoItem: PhotoItem) {
         viewModelScope.launch {
             PhotoRepository.deletePhoto(photoItem)
         }
@@ -252,8 +237,9 @@ class MainViewModel : ViewModel() {
     fun getPhotos() = PhotoRepository.getPhotos()
 
     private val inDeleteLiveData = MutableLiveData(false)
-    fun setInDelete(value: Boolean){
+    fun setInDelete(value: Boolean) {
         inDeleteLiveData.value = value
     }
+
     fun getInDelete() = inDeleteLiveData
 }

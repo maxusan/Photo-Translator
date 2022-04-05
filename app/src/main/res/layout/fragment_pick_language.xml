@@ -89,6 +89,7 @@
                     android:layout_marginHorizontal="4dp"
                     android:text="@{primary.displayName}"
                     android:fontFamily="@font/pop_reg"
+                    android:gravity="center_vertical"
                     android:textColor="@color/main_text_color"/>
 
                 <ImageView
@@ -130,6 +131,7 @@
                     android:layout_marginHorizontal="4dp"
                     android:text="@{secondary.displayName}"
                     android:fontFamily="@font/pop_reg"
+                    android:gravity="center_vertical"
                     android:textColor="@color/main_text_color"/>
 
                 <ImageView

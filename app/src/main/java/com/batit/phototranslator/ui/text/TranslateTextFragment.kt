@@ -20,6 +20,7 @@ import com.batit.phototranslator.core.util.shareText
 import com.batit.phototranslator.core.util.showSoftKeyboard
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
 import com.batit.phototranslator.ui.MainViewModel
+import com.google.android.material.snackbar.Snackbar
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
@@ -33,6 +34,9 @@ class TranslateTextFragment : Fragment() {
 
     private lateinit var secondaryLanguages: MutableList<Language>
     private lateinit var primaryLanguages: MutableList<Language>
+
+    private lateinit var snackbar: Snackbar
+
 
     private val textArguments: TranslateTextFragmentArgs by navArgs()
 
@@ -48,13 +52,22 @@ class TranslateTextFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        snackbar = Snackbar.make(binding.root, "Please wait", Snackbar.LENGTH_INDEFINITE)
+
         setupSpinners()
         setupListeners()
         if (textArguments.text != null) {
             binding.editText.setText(textArguments.text)
         }
         binding.text.text = translatedText
-
+        viewModel.getModelDownloading().observe(viewLifecycleOwner){
+//            modelDownloading = it
+            if(it && binding.editText.text.toString().isNotBlank()){
+                snackbar.show()
+            }else{
+                snackbar.dismiss()
+            }
+        }
     }
 
     private fun setupSpinners() {
@@ -220,14 +233,21 @@ class TranslateTextFragment : Fragment() {
         kotlin.runCatching {
             binding.editText.text.toString()?.let {
                 if (!it.isNullOrBlank()) {
-                    viewModel.translateText(
-                        it,
-                        viewModel.getPrimaryLanguage().value!!.code,
-                        viewModel.getSecondaryLanguage().value!!.code
-                    ) {
-                        translatedText = it
-                        binding.text.text = translatedText
+                    if(viewModel.getPrimaryLanguage().value!!.code == Language.getDefaultLanguage().code){
+                        viewModel.detectLanguage(it){code ->
+                            binding.primarySpinner.setSelection(primaryLanguages.indexOfFirst { lang -> lang.code == code })
+                        }
+                    }else{
+                        viewModel.translateText(
+                            it,
+                            viewModel.getPrimaryLanguage().value!!.code,
+                            viewModel.getSecondaryLanguage().value!!.code
+                        ) {
+                            translatedText = it
+                            binding.text.text = translatedText
+                        }
                     }
+
                 }
             }
         }
@@ -236,6 +256,7 @@ class TranslateTextFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         requireActivity().hideKeyboard()
+        snackbar?.dismiss()
     }
 
 
