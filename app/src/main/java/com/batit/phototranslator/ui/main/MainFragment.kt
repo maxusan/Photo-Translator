@@ -12,7 +12,6 @@ import android.provider.Settings
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,18 +35,13 @@ import com.batit.phototranslator.core.util.getMimeType
 import com.batit.phototranslator.databinding.FragmentMainBinding
 import com.batit.phototranslator.ui.MainViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
 import com.google.android.material.snackbar.Snackbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
-import fr.opensagres.poi.xwpf.converter.core.FileURIResolver
-import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter
-import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -226,11 +220,29 @@ class MainFragment : Fragment() {
                             withContext(Dispatchers.Main){
                                 kotlin.runCatching {
                                     viewModel.setPrimaryLanguage(Language.getDefaultLanguage())
-                                    findNavController().navigate(
-                                        MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                            parsedText
+                                    if(parsedText.length > 1500){
+                                        val builder = AlertDialog.Builder(requireContext())
+                                        builder.setMessage("Warning. The number of characters in this document is more than 1500. Translation and analysis of the text may take longer than usual.")
+                                            .setCancelable(true)
+                                            .setPositiveButton("ok") { dialog, id ->
+                                                dialog.dismiss()
+                                                findNavController().navigate(
+                                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                                        parsedText
+                                                    )
+                                                )
+                                            }.setNegativeButton("Cancel"){dialog, id ->
+                                                dialog.dismiss()
+                                            }
+                                        val alert = builder.create()
+                                        alert.show()
+                                    }else{
+                                        findNavController().navigate(
+                                            MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                                parsedText
+                                            )
                                         )
-                                    )
+                                    }
                                 }.exceptionOrNull()?.printStackTrace()
 
                             }

@@ -3,6 +3,7 @@ package com.batit.phototranslator.ui
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.util.Log
+import android.util.LruCache
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,6 +22,7 @@ import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.google.firebase.ml.vision.text.RecognizedLanguage
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.hadilq.liveevent.LiveEvent
 import kotlinx.coroutines.launch
@@ -34,6 +36,24 @@ class MainViewModel : ViewModel() {
     private fun setModelDownloading(downloading: Boolean) {
         modelDownloading.postValue(downloading)
     }
+
+    private var translating: Boolean = false
+
+    private val translators =
+        object : LruCache<TranslatorOptions, Translator>(1) {
+            override fun create(options: TranslatorOptions): Translator {
+                return Translation.getClient(options)
+            }
+
+            override fun entryRemoved(
+                evicted: Boolean,
+                key: TranslatorOptions,
+                oldValue: Translator,
+                newValue: Translator?
+            ) {
+                oldValue.close()
+            }
+        }
 
     fun getModelDownloading() = modelDownloading
 
@@ -164,7 +184,7 @@ class MainViewModel : ViewModel() {
         }
         val translatedTextList = mutableListOf<TranslatedText>()
 
-        val translator = Translation.getClient(options)
+        val translator = translators[options]
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
                 firebaseVisionText.textBlocks.forEach { textBlock ->
@@ -194,19 +214,25 @@ class MainViewModel : ViewModel() {
         target: String,
         callback: (String) -> Unit
     ) {
+        setModelDownloading(true)
+        translating = true
         val options =
             TranslatorOptions.Builder()
                 .setSourceLanguage(source)
                 .setTargetLanguage(target)
                 .build()
 
-        val translator = Translation.getClient(options)
+        val translator = translators[options]
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
-                setModelDownloading(false)
-                translator.translate(text).addOnCompleteListener {
-                    callback(it.result)
+                val lines = text.split(".")
+                lines.forEach {
+                    translator.translate(it).addOnCompleteListener {
+                        callback(it.result)
+                    }
                 }
+
+                setModelDownloading(false)
             }.addOnFailureListener {
                 it.printStackTrace()
             }
@@ -242,4 +268,8 @@ class MainViewModel : ViewModel() {
     }
 
     fun getInDelete() = inDeleteLiveData
+
+    fun dismissTranslate() {
+        translating = false
+    }
 }
