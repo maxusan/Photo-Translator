@@ -96,6 +96,7 @@ class MainTranslateFragment: Fragment() {
                 binding.translateView.setImage(it)
                 viewModel.detectText(it) {
                     viewModel.translateText(
+                        requireContext(),
                         it,
                         viewModel.getPrimaryLanguage().value!!.code,
                         viewModel.getSecondaryLanguage().value!!.code

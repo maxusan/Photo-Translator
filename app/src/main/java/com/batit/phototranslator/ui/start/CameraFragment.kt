@@ -61,7 +61,6 @@ class CameraFragment : Fragment() {
 
     private var permissionsSnackbar: Snackbar? = null
 
-    private var flag: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -181,13 +180,9 @@ class CameraFragment : Fragment() {
     }
 
     private fun takePhoto() {
-        Log.e("logs", "takePhoto()")
-//        if (!flag) {
-//            flag = true
-//            val imageCapture = imageCapture ?: return
+        binding.captureProgress.visibility = View.VISIBLE
             val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                 .format(System.currentTimeMillis())
-            Log.e("logs", "name")
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -195,7 +190,6 @@ class CameraFragment : Fragment() {
                     put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX")
                 }
             }
-            Log.e("logs", "contentValues")
             val outputOptions = ImageCapture.OutputFileOptions
                 .Builder(
                     requireContext().contentResolver,
@@ -203,22 +197,18 @@ class CameraFragment : Fragment() {
                     contentValues
                 )
                 .build()
-            Log.e("logs", "outputOptions")
 
-            val takePicture = imageCapture!!.takePicture(
+            imageCapture!!.takePicture(
                 outputOptions,
                 ContextCompat.getMainExecutor(requireContext()),
                 object : ImageCapture.OnImageSavedCallback {
                     override fun onError(exc: ImageCaptureException) {
-                        Log.e("logs", "onError")
-                        Log.e("logs", "Photo capture failed: ${exc.message}", exc)
                         exc.printStackTrace()
-//                        flag = false
+                        binding.captureProgress.visibility = View.GONE
                     }
 
                     override fun
                             onImageSaved(output: ImageCapture.OutputFileResults) {
-                        Log.e("logs", "onImageSaved")
                         kotlin.runCatching {
                             val folder = File(requireContext().cacheDir.path + "CameraX/")
                             if (!folder.exists()) {
@@ -228,7 +218,7 @@ class CameraFragment : Fragment() {
                             val intent = UCrop.of(output.savedUri!!, Uri.fromFile(imageFileDest))
                                 .getIntent(requireActivity()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                             startForCrop.launch(intent)
-//                            flag = false
+                            binding.captureProgress.visibility = View.GONE
                         }
                     }
                 }

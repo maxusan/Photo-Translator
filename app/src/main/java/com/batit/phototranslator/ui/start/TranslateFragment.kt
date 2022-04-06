@@ -97,6 +97,7 @@ class TranslateFragment : Fragment() {
                 binding.translateView.setTranslatedText(mutableListOf())
                 viewModel.detectText(it) {
                     viewModel.translateText(
+                        requireContext(),
                         it,
                         viewModel.getPrimaryLanguage().value!!.code,
                         viewModel.getSecondaryLanguage().value!!.code

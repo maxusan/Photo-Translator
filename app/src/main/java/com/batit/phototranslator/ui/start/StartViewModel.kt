@@ -1,28 +1,37 @@
 package com.batit.phototranslator.ui.start
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
-import android.net.Uri
-import android.util.Log
+import android.os.StrictMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.core.data.TranslatedText
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.translate.Translate
+import com.google.cloud.translate.TranslateOptions
+import com.google.cloud.translate.Translation
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.google.firebase.ml.vision.text.RecognizedLanguage
-import com.google.mlkit.nl.languageid.LanguageIdentification
-import com.google.mlkit.nl.translate.Translation
-import com.google.mlkit.nl.translate.TranslatorOptions
 import com.hadilq.liveevent.LiveEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
-class StartViewModel: ViewModel() {
+class StartViewModel : ViewModel() {
     private var modelDownloadTask: Task<Void> = Tasks.forCanceled()
+
+    private lateinit var trans: Translate
 
     private val modelDownloading = MutableLiveData<Boolean>(true)
     private fun setModelDownloading(downloading: Boolean) {
@@ -37,9 +46,6 @@ class StartViewModel: ViewModel() {
     private val primaryLanguage = MutableLiveData<Language>()
     fun setPrimaryLanguage(language: Language) {
         primaryLanguage.value = language
-        kotlin.runCatching {
-            downloadModelIfNeed(getSecondaryLanguage().value!!.code, language.code)
-        }
     }
 
     fun getPrimaryLanguage() = primaryLanguage
@@ -47,15 +53,10 @@ class StartViewModel: ViewModel() {
     private val secondaryLanguage = MutableLiveData<Language>()
     fun setSecondaryLanguage(language: Language) {
         secondaryLanguage.value = language
-        kotlin.runCatching {
-            downloadModelIfNeed(getPrimaryLanguage().value!!.code, language.code)
-        }
     }
 
     fun getSecondaryLanguage() = secondaryLanguage
 
-//    private val detector = FirebaseVision.getInstance().cloudTextRecognizer
-    val languageIdentifier = LanguageIdentification.getClient()
     private lateinit var image: FirebaseVisionImage
 
     private val languageState = MutableLiveData(LanguageState.PRIMARY)
@@ -74,20 +75,6 @@ class StartViewModel: ViewModel() {
             e.printStackTrace()
         }
     }
-
-    private fun downloadModelIfNeed(
-        source: String,
-        target: String
-    ) {
-        setModelDownloading(true)
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(source)
-            .setTargetLanguage(target)
-            .build()
-        val translator = Translation.getClient(options)
-        modelDownloadTask = translator.downloadModelIfNeeded()
-    }
-
 
     private fun detectLanguage(firebaseVisionText: FirebaseVisionText): RecognizedLanguage? {
         val languagesList = mutableListOf<RecognizedLanguage>()
@@ -123,64 +110,77 @@ class StartViewModel: ViewModel() {
     }
 
     fun translateText(
+        context: Context,
         firebaseVisionText: FirebaseVisionText,
         source: String,
         target: String,
         callback: (List<TranslatedText>) -> Unit
     ) {
         setModelDownloading(true)
-        val options = if (source != Language.getDefaultLanguage().code) {
-            TranslatorOptions.Builder()
-                .setSourceLanguage(source)
-                .setTargetLanguage(target)
-                .build()
-        } else {
-            TranslatorOptions.Builder()
-                .setSourceLanguage(detectLanguage(firebaseVisionText)?.languageCode ?: "en")
-                .setTargetLanguage(target)
-                .build()
-        }
         val translatedTextList = mutableListOf<TranslatedText>()
-
-        val translator = Translation.getClient(options)
-        translator.downloadModelIfNeeded()
-            .addOnSuccessListener {
-                firebaseVisionText.textBlocks.forEach { textBlock ->
-                    textBlock.lines.forEachIndexed { index, line ->
-                        translator.translate(line.text).addOnCompleteListener {
-                            translatedTextList.add(
-                                TranslatedText(
-                                    text = it.result,
-                                    boundingBox = line.boundingBox ?: Rect()
-                                )
+        getTranslateService(context)
+        firebaseVisionText.textBlocks.forEach { textBlock ->
+            textBlock.lines.forEachIndexed { index, line ->
+                viewModelScope.launch(Dispatchers.IO) {
+                    translateText( source, target, line.text) {
+                        translatedTextList.add(
+                            TranslatedText(
+                                text = it,
+                                boundingBox = line.boundingBox ?: Rect()
                             )
-                            if (index == textBlock.lines.size - 1) {
+                        )
+                        if (index == textBlock.lines.size - 1) {
                                 setModelDownloading(false)
                                 callback(translatedTextList)
-                            }
+
                         }
                     }
                 }
-            }.addOnFailureListener {
-                it.printStackTrace()
+
+
             }
+        }
     }
+
+
+    private fun getTranslateService(context: Context) {
+        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+        try {
+            context.resources.openRawResource(R.raw.credentials).use { `is` ->
+                val myCredentials = GoogleCredentials.fromStream(`is`)
+                val translateOptions =
+                    TranslateOptions.newBuilder().setCredentials(myCredentials).build()
+                trans = translateOptions.service
+            }
+        } catch (ioe: IOException) {
+            ioe.printStackTrace()
+        }
+    }
+
+    suspend fun translateText(
+        source: String,
+        target: String,
+        text: String,
+        callback: (String) -> Unit
+    ) {
+
+        val translation: Translation = trans.translate(
+            text,
+            Translate.TranslateOption.targetLanguage(target),
+            if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
+                source
+            ) else Translate.TranslateOption.model("base")
+        )
+        withContext(Dispatchers.Main) {
+            callback(translation.translatedText)
+        }
+    }
+
 
     private val _startMainEvent = LiveEvent<Boolean>()
     val startMainEvent: LiveData<Boolean> = _startMainEvent
     fun startMain() {
         _startMainEvent.postValue(true)
     }
-
-//    private val _openDrawerEvent = LiveEvent<Boolean>()
-//    val openDrawerEvent: LiveData<Boolean> = _openDrawerEvent
-//    fun openDrawer() {
-//        _openDrawerEvent.postValue(true)
-//    }
-//
-//    private val _pickDocumentEvent = LiveEvent<Uri>()
-//    val pickDocumentEvent: LiveData<Uri> = _pickDocumentEvent
-//    fun pickDocument(uri: Uri){
-//        _pickDocumentEvent.value = uri
-//    }
 }

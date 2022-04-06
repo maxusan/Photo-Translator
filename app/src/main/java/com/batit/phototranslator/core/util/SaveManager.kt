@@ -48,7 +48,7 @@ object SaveManager {
     }
 
     private fun Bitmap.toFile(stream: OutputStream) {
-        compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        compress(Bitmap.CompressFormat.JPEG, 70, stream)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

@@ -13,7 +13,7 @@
             name="fromHome"
             type="Boolean" />
 
-        <import type="android.view.View"/>
+        <import type="android.view.View" />
 
     </data>
 
@@ -27,17 +27,27 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <ProgressBar
+            android:id="@+id/capture_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <ImageButton
             android:id="@+id/close"
             android:layout_width="@dimen/close_button_size"
             android:layout_height="@dimen/close_button_size"
             android:layout_margin="12dp"
             android:background="@android:color/transparent"
-            android:src="@drawable/ic_close"
             android:scaleType="fitXY"
+            android:src="@drawable/ic_close"
+            android:visibility="@{fromHome ? View.GONE : View.VISIBLE}"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:visibility="@{fromHome ? View.GONE : View.VISIBLE}"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
             android:id="@+id/language_container"
@@ -64,12 +74,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="4dp"
-                    android:popupBackground="@drawable/language_background"
-                    android:spinnerMode="dialog"
                     android:dropDownHeight="100dp"
                     android:dropDownVerticalOffset="300dp"
                     android:maxHeight="300dp"
-                    android:textSize="@dimen/translated_text_size"/>
+                    android:popupBackground="@drawable/language_background"
+                    android:spinnerMode="dialog"
+                    android:textSize="@dimen/translated_text_size" />
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -86,8 +96,8 @@
                 android:id="@+id/swap_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_gravity="center_vertical"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_swap" />
 
@@ -108,11 +118,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="4dp"
-                    android:popupBackground="@drawable/language_background"
-                    android:spinnerMode="dialog"
                     android:dropDownHeight="100dp"
                     android:dropDownVerticalOffset="-80dp"
-                    android:textSize="@dimen/translated_text_size"/>
+                    android:popupBackground="@drawable/language_background"
+                    android:spinnerMode="dialog"
+                    android:textSize="@dimen/translated_text_size" />
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -141,9 +151,9 @@
                 android:id="@+id/galleryButton"
                 android:layout_width="@dimen/camera_buttons_size"
                 android:layout_height="@dimen/camera_buttons_size"
-                android:scaleType="fitXY"
                 android:layout_gravity="bottom"
                 android:background="@android:color/transparent"
+                android:scaleType="fitXY"
                 android:src="@drawable/ic_gallery" />
 
             <ImageView
@@ -160,9 +170,9 @@
                 android:id="@+id/torchButton"
                 android:layout_width="@dimen/camera_buttons_size"
                 android:layout_height="@dimen/camera_buttons_size"
-                android:scaleType="fitXY"
                 android:layout_gravity="bottom"
                 android:background="@android:color/transparent"
+                android:scaleType="fitXY"
                 android:src="@{torch ? @drawable/ic_torch_on : @drawable/ic_torch_off}" />
 
         </LinearLayout>

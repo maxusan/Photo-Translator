@@ -4,7 +4,8 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Build
@@ -20,7 +21,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -33,6 +37,7 @@ import com.batit.phototranslator.core.FileUtils
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.data.LanguageProvider
 import com.batit.phototranslator.core.db.PhotoItem
+import com.batit.phototranslator.core.util.SaveManager
 import com.batit.phototranslator.core.util.checkPermissions
 import com.batit.phototranslator.core.util.getMimeType
 import com.batit.phototranslator.databinding.FragmentMainBinding
@@ -71,6 +76,34 @@ class MainFragment : Fragment() {
         binding = FragmentMainBinding.inflate(inflater)
         return binding.root
     }
+
+    private var startForCrop = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            assert(result.data != null)
+            val resultUri = UCrop.getOutput(result.data!!)
+            if (resultUri != null) {
+                findNavController().navigate(MainFragmentDirections.actionHomeToTranslateFragment2(resultUri))
+            }
+        } else {
+            Toast.makeText(requireContext(), "Task Cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun cropImage(imageUri: Uri) {
+        kotlin.runCatching {
+            val folder = File(requireContext().cacheDir.path + "CameraX/")
+            if (!folder.exists()) {
+                folder.mkdir()
+            }
+            val imageFileDest = File(folder, UUID.randomUUID().toString() + ".jpg")
+            val intent = UCrop.of(imageUri, Uri.fromFile(imageFileDest))
+                .getIntent(requireActivity())
+            startForCrop.launch(intent)
+        }
+    }
+
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -190,49 +223,13 @@ class MainFragment : Fragment() {
                     readingSnackbar?.show()
                     lifecycleScope.launch(Dispatchers.IO) {
                         val data = result.data!!.data!!
-                        var parsedText: String = ""
                         val path = FileUtils.getPath(requireContext(), data)
                         val file = File(path)
                         when (data.getMimeType(requireContext())) {
                             "pdf" -> {
-                                parsedText = showPagesDialog(data, parsedText, file)
-                            }
-                            "txt" -> {
-                                val reader = FileReader(file.path)
-                                parsedText = reader.readText()
+                               showPagesDialog(data, file)
                             }
                             else -> {}
-                        }
-                        if (parsedText.isNotBlank()) {
-                            withContext(Dispatchers.Main) {
-                                kotlin.runCatching {
-                                    viewModel.setPrimaryLanguage(Language.getDefaultLanguage())
-                                    if (parsedText.length > 1500) {
-                                        val builder = AlertDialog.Builder(requireContext())
-                                        builder.setMessage("Warning. The number of characters in this document is more than 1500. Translation and analysis of the text may take longer than usual.")
-                                            .setCancelable(true)
-                                            .setPositiveButton("ok") { dialog, id ->
-                                                dialog.dismiss()
-                                                findNavController().navigate(
-                                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                                        parsedText
-                                                    )
-                                                )
-                                            }.setNegativeButton("Cancel") { dialog, id ->
-                                                dialog.dismiss()
-                                            }
-                                        val alert = builder.create()
-                                        alert.show()
-                                    } else {
-                                        findNavController().navigate(
-                                            MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                                parsedText
-                                            )
-                                        )
-                                    }
-                                }.exceptionOrNull()?.printStackTrace()
-
-                            }
                         }
                         withContext(Dispatchers.Main) {
                             readingSnackbar?.dismiss()
@@ -248,10 +245,8 @@ class MainFragment : Fragment() {
 
     private suspend fun showPagesDialog(
         data: Uri,
-        parsedText: String,
         file: File
-    ): String {
-        var parsedText1 = parsedText
+    ) {
         PDFBoxResourceLoader.init(requireContext())
         val inputStream: InputStream =
             requireContext().contentResolver.openInputStream(data)!!
@@ -264,7 +259,7 @@ class MainFragment : Fragment() {
         builderSingle.setTitle("Select page")
 
         val pagesList = mutableListOf<String>()
-        for (i in 0..document.numberOfPages) {
+        for (i in 0 until document.numberOfPages) {
             val temp = i + 1
             pagesList.add("Page $temp")
         }
@@ -272,7 +267,7 @@ class MainFragment : Fragment() {
         val arrayAdapter =
             ArrayAdapter<String>(
                 requireContext(),
-                android.R.layout.select_dialog_singlechoice
+                android.R.layout.select_dialog_item
             )
         arrayAdapter.addAll(pagesList)
 
@@ -284,16 +279,11 @@ class MainFragment : Fragment() {
                     val pdfStripper = PDFTextStripper()
                     pdfStripper.startPage = which
                     pdfStripper.endPage = which
-                    parsedText1 = pdfStripper.getText(document)
-                    showTextPreview(pdfToBitmap(file, which)!!) {
+                    val bitmap = pdfToBitmap(file, which)!!
+
+                    showTextPreview(bitmap) {
                         if (it) {
-                            lifecycleScope.launch(Dispatchers.Main) {
-                                findNavController().navigate(
-                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
-                                        parsedText1
-                                    )
-                                )
-                            }
+                            saveBitmapToCache(bitmap)
                         }
                     }
 
@@ -310,7 +300,11 @@ class MainFragment : Fragment() {
         withContext(Dispatchers.Main) {
             builderSingle.show()
         }
-        return parsedText1
+    }
+
+    private fun saveBitmapToCache(bitmap: Bitmap) {
+        val path = SaveManager.saveImage(requireContext(), bitmap)
+        cropImage(Uri.fromFile(File(path)))
     }
 
 
@@ -355,9 +349,9 @@ class MainFragment : Fragment() {
 
     private fun startPdfLauncher() {
         val mimeTypes = arrayOf(
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "text/plain",
+//            "application/msword",
+//            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//            "text/plain",
             "application/pdf",
         )
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -488,32 +482,45 @@ class MainFragment : Fragment() {
 
     private fun pdfToBitmap(pdfFile: File, pageNum: Int): Bitmap? {
         var bitmap: Bitmap? = null
+        var finalBitmap: Bitmap? = null
         try {
             val renderer =
                 PdfRenderer(ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY))
             val pageCount = renderer.pageCount
             if (pageCount > 0) {
                 val page = renderer.openPage(pageNum)
-                bitmap = Bitmap.createBitmap(getResources().getDisplayMetrics().densityDpi * page.getWidth() / 72,
-                    getResources().getDisplayMetrics().densityDpi * page.getHeight() / 72,
-                    Bitmap.Config.ARGB_8888)
+                finalBitmap = Bitmap.createBitmap(
+                    resources.displayMetrics.densityDpi * page.width / 72,
+                    resources.displayMetrics.densityDpi * page.height / 72,
+                    Bitmap.Config.ARGB_8888
+                )
+                val cv = Canvas(finalBitmap)
+                cv.drawColor(Color.WHITE)
+
+
+                bitmap = Bitmap.createBitmap(
+                    resources.displayMetrics.densityDpi * page.width / 72,
+                    resources.displayMetrics.densityDpi * page.height / 72,
+                    Bitmap.Config.ARGB_8888
+                )
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
                 page.close()
                 renderer.close()
+                cv.drawBitmap(bitmap, 0f, 0f, null)
             }
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
         }
-        return bitmap
+        return finalBitmap
     }
 
     private fun showTextPreview(bitmap: Bitmap, callback: (Boolean) -> Unit) {
         val builder = AlertDialog.Builder(requireContext())
         builder.setPositiveButton(
             "Translate"
-        ) { dialog, which ->callback(true) }.setNegativeButton(
+        ) { dialog, which -> callback(true) }.setNegativeButton(
             "Cancel"
-        ) { dialog, which -> callback(false)}
+        ) { dialog, which -> callback(false) }
         val dialog = builder.create()
         val inflater = layoutInflater
         val dialogLayout: View = inflater.inflate(R.layout.pdf_preview_layout, null)

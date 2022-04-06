@@ -1,6 +1,8 @@
 package com.batit.phototranslator.ui.text
 
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -9,23 +11,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.copyTextToClipboard
-import com.batit.phototranslator.core.util.hideKeyboard
 import com.batit.phototranslator.core.util.shareText
 import com.batit.phototranslator.core.util.showSoftKeyboard
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
 import com.batit.phototranslator.ui.MainViewModel
-import com.google.android.material.snackbar.Snackbar
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.translate.Translate
+import com.google.cloud.translate.TranslateOptions
+import com.google.cloud.translate.Translation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
-import java.util.*
+import java.io.IOException
 
 
 class TranslateTextFragment : Fragment() {
@@ -38,18 +45,15 @@ class TranslateTextFragment : Fragment() {
     private lateinit var secondaryLanguages: MutableList<Language>
     private lateinit var primaryLanguages: MutableList<Language>
 
-    private lateinit var snackbar: Snackbar
-
     private val textArguments: TranslateTextFragmentArgs by navArgs()
 
-    private var flag: Boolean = false
-
-    private var primary: Boolean = false
-    private var secondary: Boolean = false
+    private var translating: Boolean = false
 
     private var translatedText: String = ""
 
     private var modelDownloading: Boolean = false
+
+    private lateinit var translate: Translate
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,22 +65,13 @@ class TranslateTextFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        snackbar = Snackbar.make(binding.root, "Please wait", Snackbar.LENGTH_INDEFINITE)
-
+        getTranslateService()
         setupSpinners()
         setupListeners()
         if (textArguments.text != null) {
             binding.editText.setText(textArguments.text)
         }
         binding.text.text = translatedText
-        viewModel.getModelDownloading().observe(viewLifecycleOwner) {
-            modelDownloading = it
-            if (it && flag) {
-                snackbar.show()
-            } else {
-                snackbar.dismiss()
-            }
-        }
     }
 
     private fun setupSpinners() {
@@ -155,19 +150,13 @@ class TranslateTextFragment : Fragment() {
         })
 
         viewModel.getPrimaryLanguage().observe(viewLifecycleOwner) {
-           if(primary && secondary){
-               translateText()
+            translateText()
 
-           }
-            primary = true
         }
 
         viewModel.getSecondaryLanguage().observe(viewLifecycleOwner) {
-            if(secondary && primary){
-                translateText()
+            translateText()
 
-            }
-            secondary = true
         }
 
         binding.swapButton.setOnClickListener {
@@ -248,82 +237,46 @@ class TranslateTextFragment : Fragment() {
 
 
     private fun translateText() {
-        if (!modelDownloading) {
-            flag = true
-            kotlin.runCatching {
-                binding.editText.text.toString()?.let {
-                    if (!it.isNullOrBlank()) {
-                        if (viewModel.getPrimaryLanguage().value!!.code == Language.getDefaultLanguage().code) {
-                            if (it.length > 30) {
-                                val trimmedText = it.substring(0, 30)
-                                viewModel.detectLanguage(trimmedText) { code ->
-                                    var stringBuilder = StringBuilder()
-                                    flag = true
-                                    viewModel.translateText(
-                                        it,
-                                        code,
-                                        viewModel.getSecondaryLanguage().value!!.code
-                                    ) {
-                                        stringBuilder.append(it)
-                                        translatedText = stringBuilder.toString()
-                                        binding.text.text = translatedText
-                                        flag = false
-                                    }
-
-                                    Toast.makeText(requireContext(), "Detected language: ${Locale(code).displayName}", Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                viewModel.detectLanguage(it) { code ->
-                                    var stringBuilder = StringBuilder()
-                                    flag = true
-                                    viewModel.translateText(
-                                        it,
-                                        code,
-                                        viewModel.getSecondaryLanguage().value!!.code
-                                    ) {
-                                        stringBuilder.append(it)
-                                        translatedText = stringBuilder.toString()
-                                        binding.text.text = translatedText
-                                        flag = false
-                                    }
-                                    Toast.makeText(requireContext(), "Detected language: ${Locale(code).displayName}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        } else {
-                            var stringBuilder = StringBuilder()
-                            flag = true
-                            viewModel.translateText(
-                                it,
-                                viewModel.getPrimaryLanguage().value!!.code,
-                                viewModel.getSecondaryLanguage().value!!.code
-                            ) {
-                                stringBuilder.append(it)
-                                translatedText = stringBuilder.toString()
-                                binding.text.text = translatedText
-                            }
-                            flag = false
-
-                        }
-
-                    }
+        binding.editText.text.toString()?.let {
+                lifecycleScope.launch(Dispatchers.IO){
+                    translate(
+                        viewModel.getPrimaryLanguage().value!!.code,
+                        viewModel.getSecondaryLanguage().value!!.code,
+                        it
+                    )
                 }
-            }
         }
 
     }
 
-    override fun onPause() {
-        super.onPause()
-        snackbar?.dismiss()
-        viewModel.dismissTranslate()
+    private fun getTranslateService() {
+        val policy = ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+        try {
+            resources.openRawResource(R.raw.credentials).use { `is` ->
+                val myCredentials = GoogleCredentials.fromStream(`is`)
+                val translateOptions =
+                    TranslateOptions.newBuilder().setCredentials(myCredentials).build()
+                translate = translateOptions.service
+            }
+        } catch (ioe: IOException) {
+            ioe.printStackTrace()
+        }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        requireActivity().hideKeyboard()
-        snackbar?.dismiss()
-        viewModel.dismissTranslate()
+    suspend fun translate(source: String, target: String, text: String) {
 
+        val translation: Translation = translate.translate(
+            text,
+            Translate.TranslateOption.targetLanguage(target),
+            if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
+                source
+            ) else Translate.TranslateOption.model("base")
+        )
+        withContext(Dispatchers.Main){
+            translatedText = translation.translatedText
+            binding.text.text = translatedText
+        }
     }
 
 
