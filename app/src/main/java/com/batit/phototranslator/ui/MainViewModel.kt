@@ -169,6 +169,7 @@ class MainViewModel : ViewModel() {
 //        recognizedLanguageCallback: (Language?) -> Unit,
         callback: (List<TranslatedText>) -> Unit
     ) {
+        setModelDownloading(true)
         val options = if (source != Language.getDefaultLanguage().code) {
             TranslatorOptions.Builder()
                 .setSourceLanguage(source)

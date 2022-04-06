@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -24,6 +25,7 @@ import com.batit.phototranslator.ui.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
+import java.util.*
 
 
 class TranslateTextFragment : Fragment() {
@@ -42,7 +44,12 @@ class TranslateTextFragment : Fragment() {
 
     private var flag: Boolean = false
 
+    private var primary: Boolean = false
+    private var secondary: Boolean = false
+
     private var translatedText: String = ""
+
+    private var modelDownloading: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,7 +70,8 @@ class TranslateTextFragment : Fragment() {
         }
         binding.text.text = translatedText
         viewModel.getModelDownloading().observe(viewLifecycleOwner) {
-            if (it) {
+            modelDownloading = it
+            if (it && flag) {
                 snackbar.show()
             } else {
                 snackbar.dismiss()
@@ -91,7 +99,8 @@ class TranslateTextFragment : Fragment() {
         )
         primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
-
+        binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(viewModel.getSecondaryLanguage().value!!))
+        binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(viewModel.getPrimaryLanguage().value!!))
         binding.ids.setOnClickListener {
             binding.editText.showSoftKeyboard()
         }
@@ -146,13 +155,19 @@ class TranslateTextFragment : Fragment() {
         })
 
         viewModel.getPrimaryLanguage().observe(viewLifecycleOwner) {
-            binding.primarySpinner.setSelection(primarySpinnerAdapter.getPosition(it))
-            translateText()
+           if(primary && secondary){
+               translateText()
+
+           }
+            primary = true
         }
 
         viewModel.getSecondaryLanguage().observe(viewLifecycleOwner) {
-            binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(it))
-            translateText()
+            if(secondary && primary){
+                translateText()
+
+            }
+            secondary = true
         }
 
         binding.swapButton.setOnClickListener {
@@ -233,20 +248,45 @@ class TranslateTextFragment : Fragment() {
 
 
     private fun translateText() {
-        if (!flag) {
+        if (!modelDownloading) {
+            flag = true
             kotlin.runCatching {
                 binding.editText.text.toString()?.let {
                     if (!it.isNullOrBlank()) {
                         if (viewModel.getPrimaryLanguage().value!!.code == Language.getDefaultLanguage().code) {
                             if (it.length > 30) {
-                                Log.e("logs", it.length.toString())
                                 val trimmedText = it.substring(0, 30)
                                 viewModel.detectLanguage(trimmedText) { code ->
-                                    binding.primarySpinner.setSelection(primaryLanguages.indexOfFirst { lang -> lang.code == code })
+                                    var stringBuilder = StringBuilder()
+                                    flag = true
+                                    viewModel.translateText(
+                                        it,
+                                        code,
+                                        viewModel.getSecondaryLanguage().value!!.code
+                                    ) {
+                                        stringBuilder.append(it)
+                                        translatedText = stringBuilder.toString()
+                                        binding.text.text = translatedText
+                                        flag = false
+                                    }
+
+                                    Toast.makeText(requireContext(), "Detected language: ${Locale(code).displayName}", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
                                 viewModel.detectLanguage(it) { code ->
-                                    binding.primarySpinner.setSelection(primaryLanguages.indexOfFirst { lang -> lang.code == code })
+                                    var stringBuilder = StringBuilder()
+                                    flag = true
+                                    viewModel.translateText(
+                                        it,
+                                        code,
+                                        viewModel.getSecondaryLanguage().value!!.code
+                                    ) {
+                                        stringBuilder.append(it)
+                                        translatedText = stringBuilder.toString()
+                                        binding.text.text = translatedText
+                                        flag = false
+                                    }
+                                    Toast.makeText(requireContext(), "Detected language: ${Locale(code).displayName}", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         } else {
@@ -257,7 +297,6 @@ class TranslateTextFragment : Fragment() {
                                 viewModel.getPrimaryLanguage().value!!.code,
                                 viewModel.getSecondaryLanguage().value!!.code
                             ) {
-//                            Log.e("logs", it)
                                 stringBuilder.append(it)
                                 translatedText = stringBuilder.toString()
                                 binding.text.text = translatedText

@@ -3,11 +3,15 @@ package com.batit.phototranslator.ui.main
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.provider.Settings
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -15,9 +19,8 @@ import android.speech.SpeechRecognizer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.view.Window
+import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -39,10 +42,14 @@ import com.google.android.material.snackbar.Snackbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.*
+import java.io.File
+import java.io.FileReader
+import java.io.IOException
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -55,9 +62,9 @@ class MainFragment : Fragment() {
     private lateinit var secondaryLanguages: MutableList<Language>
 
     private lateinit var snackBar: Snackbar
-    private  var readingSnackbar: Snackbar? = null
+    private var readingSnackbar: Snackbar? = null
 
-        override fun onCreateView(
+    override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
@@ -177,37 +184,18 @@ class MainFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             val resultCode = result.resultCode
             if (resultCode == Activity.RESULT_OK) {
-                readingSnackbar = Snackbar.make(requireView(), "Document reading...", Snackbar.LENGTH_INDEFINITE)
+                readingSnackbar =
+                    Snackbar.make(requireView(), "Document reading...", Snackbar.LENGTH_INDEFINITE)
                 kotlin.runCatching {
                     readingSnackbar?.show()
-                    lifecycleScope.launch(Dispatchers.IO){
+                    lifecycleScope.launch(Dispatchers.IO) {
                         val data = result.data!!.data!!
                         var parsedText: String = ""
                         val path = FileUtils.getPath(requireContext(), data)
                         val file = File(path)
                         when (data.getMimeType(requireContext())) {
                             "pdf" -> {
-                                PDFBoxResourceLoader.init(requireContext())
-                                val inputStream: InputStream =
-                                    requireContext().contentResolver.openInputStream(data)!!
-
-                                val document = PDDocument.load(inputStream)
-                                try {
-                                    val pdfStripper = PDFTextStripper()
-                                    pdfStripper.startPage = 0
-                                    pdfStripper.endPage = document.numberOfPages
-                                    parsedText = pdfStripper.getText(document)
-
-                                } catch (e: IOException) {
-                                    e.printStackTrace()
-                                } finally {
-                                    try {
-                                        document?.close()
-                                    } catch (e: IOException) {
-                                        e.printStackTrace()
-                                    }
-                                }
-
+                                parsedText = showPagesDialog(data, parsedText, file)
                             }
                             "txt" -> {
                                 val reader = FileReader(file.path)
@@ -215,12 +203,11 @@ class MainFragment : Fragment() {
                             }
                             else -> {}
                         }
-//                        Log.e("logs", parsedText)
                         if (parsedText.isNotBlank()) {
-                            withContext(Dispatchers.Main){
+                            withContext(Dispatchers.Main) {
                                 kotlin.runCatching {
                                     viewModel.setPrimaryLanguage(Language.getDefaultLanguage())
-                                    if(parsedText.length > 1500){
+                                    if (parsedText.length > 1500) {
                                         val builder = AlertDialog.Builder(requireContext())
                                         builder.setMessage("Warning. The number of characters in this document is more than 1500. Translation and analysis of the text may take longer than usual.")
                                             .setCancelable(true)
@@ -231,12 +218,12 @@ class MainFragment : Fragment() {
                                                         parsedText
                                                     )
                                                 )
-                                            }.setNegativeButton("Cancel"){dialog, id ->
+                                            }.setNegativeButton("Cancel") { dialog, id ->
                                                 dialog.dismiss()
                                             }
                                         val alert = builder.create()
                                         alert.show()
-                                    }else{
+                                    } else {
                                         findNavController().navigate(
                                             MainFragmentDirections.actionHomeToTranslateTextFragment(
                                                 parsedText
@@ -247,17 +234,84 @@ class MainFragment : Fragment() {
 
                             }
                         }
-                        withContext(Dispatchers.Main){
+                        withContext(Dispatchers.Main) {
                             readingSnackbar?.dismiss()
                         }
                     }
-                }.exceptionOrNull()?.let{
+                }.exceptionOrNull()?.let {
                     it.printStackTrace()
                     Toast.makeText(requireContext(), "Something went wrong", Toast.LENGTH_SHORT)
                         .show()
                 }
             }
         }
+
+    private suspend fun showPagesDialog(
+        data: Uri,
+        parsedText: String,
+        file: File
+    ): String {
+        var parsedText1 = parsedText
+        PDFBoxResourceLoader.init(requireContext())
+        val inputStream: InputStream =
+            requireContext().contentResolver.openInputStream(data)!!
+
+        val document = PDDocument.load(inputStream)
+        val builderSingle: AlertDialog.Builder =
+            AlertDialog.Builder(requireContext())
+
+        builderSingle.setCancelable(false)
+        builderSingle.setTitle("Select page")
+
+        val pagesList = mutableListOf<String>()
+        for (i in 0..document.numberOfPages) {
+            val temp = i + 1
+            pagesList.add("Page $temp")
+        }
+
+        val arrayAdapter =
+            ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.select_dialog_singlechoice
+            )
+        arrayAdapter.addAll(pagesList)
+
+        builderSingle.setNegativeButton("cancel",
+            DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() })
+        builderSingle.setAdapter(arrayAdapter,
+            DialogInterface.OnClickListener { dialog, which ->
+                try {
+                    val pdfStripper = PDFTextStripper()
+                    pdfStripper.startPage = which
+                    pdfStripper.endPage = which
+                    parsedText1 = pdfStripper.getText(document)
+                    showTextPreview(pdfToBitmap(file, which)!!) {
+                        if (it) {
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                findNavController().navigate(
+                                    MainFragmentDirections.actionHomeToTranslateTextFragment(
+                                        parsedText1
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    try {
+                        document?.close()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            })
+        withContext(Dispatchers.Main) {
+            builderSingle.show()
+        }
+        return parsedText1
+    }
 
 
     private fun pickDocument() {
@@ -331,7 +385,6 @@ class MainFragment : Fragment() {
 
     private fun startSpeechRecognition() {
         val builderSingle: AlertDialog.Builder = AlertDialog.Builder(requireContext())
-//        builderSingle.setIcon(R.drawable.ic_launcher)
         builderSingle.setTitle("Select language")
 
         val arrayAdapter =
@@ -431,6 +484,44 @@ class MainFragment : Fragment() {
 
         builderSingle.show()
 
+    }
+
+    private fun pdfToBitmap(pdfFile: File, pageNum: Int): Bitmap? {
+        var bitmap: Bitmap? = null
+        try {
+            val renderer =
+                PdfRenderer(ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY))
+            val pageCount = renderer.pageCount
+            if (pageCount > 0) {
+                val page = renderer.openPage(pageNum)
+                bitmap = Bitmap.createBitmap(getResources().getDisplayMetrics().densityDpi * page.getWidth() / 72,
+                    getResources().getDisplayMetrics().densityDpi * page.getHeight() / 72,
+                    Bitmap.Config.ARGB_8888)
+                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                page.close()
+                renderer.close()
+            }
+        } catch (ex: java.lang.Exception) {
+            ex.printStackTrace()
+        }
+        return bitmap
+    }
+
+    private fun showTextPreview(bitmap: Bitmap, callback: (Boolean) -> Unit) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setPositiveButton(
+            "Translate"
+        ) { dialog, which ->callback(true) }.setNegativeButton(
+            "Cancel"
+        ) { dialog, which -> callback(false)}
+        val dialog = builder.create()
+        val inflater = layoutInflater
+        val dialogLayout: View = inflater.inflate(R.layout.pdf_preview_layout, null)
+        dialog.setView(dialogLayout)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+
+        dialog.show()
+        dialog.findViewById<ImageView>(R.id.pdf_preview)?.setImageBitmap(bitmap)
     }
 
     override fun onPause() {
