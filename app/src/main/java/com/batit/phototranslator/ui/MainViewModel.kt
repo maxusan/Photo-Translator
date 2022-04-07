@@ -42,7 +42,7 @@ class MainViewModel : ViewModel() {
     private var modelDownloadTask: Task<Void> = Tasks.forCanceled()
 
     private val modelDownloading = MutableLiveData<Boolean>(true)
-    private fun setModelDownloading(downloading: Boolean) {
+    fun setModelDownloading(downloading: Boolean) {
         modelDownloading.postValue(downloading)
     }
 

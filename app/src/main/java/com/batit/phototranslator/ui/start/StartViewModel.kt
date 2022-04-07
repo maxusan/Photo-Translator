@@ -34,7 +34,7 @@ class StartViewModel : ViewModel() {
     private lateinit var trans: Translate
 
     private val modelDownloading = MutableLiveData<Boolean>(true)
-    private fun setModelDownloading(downloading: Boolean) {
+    fun setModelDownloading(downloading: Boolean) {
         modelDownloading.postValue(downloading)
     }
 

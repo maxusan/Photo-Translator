@@ -161,6 +161,7 @@ class MainTranslateFragment : Fragment() {
             assert(result.data != null)
             val resultUri = UCrop.getOutput(result.data!!)
             if (resultUri != null) {
+                viewModel.setModelDownloading(true)
                 processText(resultUri)
             }
         } else {
