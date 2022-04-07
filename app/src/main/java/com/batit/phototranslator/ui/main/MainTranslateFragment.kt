@@ -41,7 +41,8 @@ class MainTranslateFragment : Fragment() {
 
     private var modelDownloading: Boolean = true
     private lateinit var snackbar: Snackbar
-
+    private var imageUri: Uri? = null
+    private var cropped: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,7 +54,7 @@ class MainTranslateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        processText(translateArgs.imageUri)
+        processText(if(!cropped)translateArgs.imageUri else imageUri!!)
         snackbar = Snackbar.make(binding.root, "Please wait", Snackbar.LENGTH_INDEFINITE)
         viewModel.getModelDownloading().observe(viewLifecycleOwner) {
             modelDownloading = it
@@ -161,6 +162,8 @@ class MainTranslateFragment : Fragment() {
             assert(result.data != null)
             val resultUri = UCrop.getOutput(result.data!!)
             if (resultUri != null) {
+                cropped = true
+                imageUri = resultUri
                 viewModel.setModelDownloading(true)
                 processText(resultUri)
             }

@@ -46,6 +46,9 @@ class TranslateFragment : Fragment() {
 
     private val recognizedText: FirebaseVisionText? = null
 
+    private var imageUri: Uri? = null
+    private var cropped: Boolean = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -117,7 +120,7 @@ class TranslateFragment : Fragment() {
         binding.close.setOnClickListener {
             viewModel.startMain()
         }
-        processText(translateArgs.imageUri)
+        processText(if(!cropped)translateArgs.imageUri else imageUri!!)
     }
 
     private fun processText(uri: Uri) {
@@ -165,6 +168,8 @@ class TranslateFragment : Fragment() {
             assert(result.data != null)
             val resultUri = UCrop.getOutput(result.data!!)
             if (resultUri != null) {
+                cropped = true
+                imageUri = resultUri
                 viewModel.setModelDownloading(true)
                 processText(resultUri)
             }
