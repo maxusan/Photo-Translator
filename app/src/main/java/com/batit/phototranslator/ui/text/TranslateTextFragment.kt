@@ -19,6 +19,7 @@ import androidx.navigation.fragment.navArgs
 import com.batit.phototranslator.R
 import com.batit.phototranslator.core.data.Language
 import com.batit.phototranslator.core.util.copyTextToClipboard
+import com.batit.phototranslator.core.util.hideKeyboard
 import com.batit.phototranslator.core.util.shareText
 import com.batit.phototranslator.core.util.showSoftKeyboard
 import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
@@ -265,18 +266,27 @@ class TranslateTextFragment : Fragment() {
     }
 
     suspend fun translate(source: String, target: String, text: String) {
-
-        val translation: Translation = translate.translate(
-            text,
-            Translate.TranslateOption.targetLanguage(target),
-            if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
-                source
-            ) else Translate.TranslateOption.model("base")
-        )
-        withContext(Dispatchers.Main){
-            translatedText = translation.translatedText
-            binding.text.text = translatedText
+        kotlin.runCatching {
+            val translation: Translation = translate.translate(
+                text,
+                Translate.TranslateOption.targetLanguage(target),
+                if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
+                    source
+                ) else Translate.TranslateOption.model("base")
+            )
+            withContext(Dispatchers.Main){
+                translatedText = translation.translatedText
+                binding.text.text = translatedText
+            }
+        }.exceptionOrNull()?.let{
+            binding.text.text = binding.editText.text.toString()
+            it.printStackTrace()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().hideKeyboard()
     }
 
 

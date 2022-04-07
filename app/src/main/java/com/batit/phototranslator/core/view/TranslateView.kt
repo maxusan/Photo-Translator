@@ -25,6 +25,12 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
     private val textPaint: Paint = Paint()
     private val rectPaint: Paint = Paint()
 
+    private var drawingCallback: DrawingCallback? = null
+    fun setDrawingCallback(drawingCallback: DrawingCallback){
+        this.drawingCallback = drawingCallback
+        invalidate()
+    }
+
     var showText: Boolean = false
         set(value) {
             field = value
@@ -85,7 +91,9 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
             canvas.drawBitmap(it, bitmapMatrix, null)
             textsList?.let {
                 if (showText) {
+                    drawingCallback?.drawing(true)
                     drawTextOverImage(it, canvas)
+                    drawingCallback?.drawing(false)
                 }
             }
         }
@@ -131,6 +139,10 @@ class TranslateView(context: Context, attributeSet: AttributeSet) :
                 text.boundingBox.bottom.toFloat(), textPaint
             )
         }
+    }
+
+    interface DrawingCallback{
+        fun drawing(value: Boolean)
     }
 
 

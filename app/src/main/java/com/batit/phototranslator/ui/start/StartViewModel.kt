@@ -158,23 +158,25 @@ class StartViewModel : ViewModel() {
         }
     }
 
-    suspend fun translateText(
+    private suspend fun translateText(
         source: String,
         target: String,
         text: String,
         callback: (String) -> Unit
     ) {
+        kotlin.runCatching {
+            val translation: Translation = trans.translate(
+                text,
+                Translate.TranslateOption.targetLanguage(target),
+                if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
+                    source
+                ) else Translate.TranslateOption.model("base")
+            )
+            withContext(Dispatchers.Main) {
+                callback(translation.translatedText)
+            }
+        }.exceptionOrNull()?.printStackTrace()
 
-        val translation: Translation = trans.translate(
-            text,
-            Translate.TranslateOption.targetLanguage(target),
-            if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
-                source
-            ) else Translate.TranslateOption.model("base")
-        )
-        withContext(Dispatchers.Main) {
-            callback(translation.translatedText)
-        }
     }
 
 

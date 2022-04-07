@@ -153,23 +153,25 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    suspend fun translateText(
+    private suspend fun translateText(
         source: String,
         target: String,
         text: String,
         callback: (String) -> Unit
     ) {
+        kotlin.runCatching {
+            val translation: com.google.cloud.translate.Translation = trans.translate(
+                text,
+                Translate.TranslateOption.targetLanguage(target),
+                if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
+                    source
+                ) else Translate.TranslateOption.model("base")
+            )
+            withContext(Dispatchers.Main) {
+                callback(translation.translatedText)
+            }
+        }.exceptionOrNull()?.printStackTrace()
 
-        val translation: com.google.cloud.translate.Translation = trans.translate(
-            text,
-            Translate.TranslateOption.targetLanguage(target),
-            if (source != Language.getDefaultLanguage().code) Translate.TranslateOption.sourceLanguage(
-                source
-            ) else Translate.TranslateOption.model("base")
-        )
-        withContext(Dispatchers.Main) {
-            callback(translation.translatedText)
-        }
     }
 
     private val _startMainEvent = LiveEvent<Boolean>()
