@@ -279,8 +279,10 @@ class TranslateTextFragment : Fragment() {
                 binding.text.text = translatedText
             }
         }.exceptionOrNull()?.let{
-            binding.text.text = binding.editText.text.toString()
-            it.printStackTrace()
+            withContext(Dispatchers.Main){
+                binding.text.text = binding.editText.text.toString()
+                it.printStackTrace()
+            }
         }
     }
 
