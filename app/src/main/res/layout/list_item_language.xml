@@ -6,7 +6,7 @@
     <data>
         <variable
             name="language"
-            type="com.batit.phototranslator.core.data.Language" />
+            type="com.chkmx.phototranslator.core.data.Language" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.main
+package com.chkmx.phototranslator.ui.main
 
 import android.app.Activity
 import android.content.DialogInterface
@@ -32,16 +32,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.FileUtils
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.data.LanguageProvider
-import com.batit.phototranslator.core.db.PhotoItem
-import com.batit.phototranslator.core.util.SaveManager
-import com.batit.phototranslator.core.util.checkPermissions
-import com.batit.phototranslator.core.util.getMimeType
-import com.batit.phototranslator.databinding.FragmentMainBinding
-import com.batit.phototranslator.ui.MainViewModel
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.FileUtils
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.data.LanguageProvider
+import com.chkmx.phototranslator.core.db.PhotoItem
+import com.chkmx.phototranslator.core.util.SaveManager
+import com.chkmx.phototranslator.core.util.checkPermissions
+import com.chkmx.phototranslator.core.util.getMimeType
+import com.chkmx.phototranslator.databinding.FragmentMainBinding
+import com.chkmx.phototranslator.ui.MainViewModel
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -52,7 +52,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileReader
 import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat

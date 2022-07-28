@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.chkmx.phototranslator.ui.start
 
 import android.app.Activity
 import android.app.Activity.RESULT_OK
@@ -25,10 +25,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.util.checkPermissions
-import com.batit.phototranslator.databinding.FragmentCameraBinding
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.util.checkPermissions
+import com.chkmx.phototranslator.databinding.FragmentCameraBinding
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import com.yalantis.ucrop.UCrop
@@ -87,18 +86,18 @@ class CameraFragment : Fragment() {
         secondaryLanguages = viewModel.getLanguages().toMutableList()
         secondarySpinnerAdapter = ArrayAdapter(
             requireContext(),
-            R.layout.simple_spinner_item, secondaryLanguages
+            android.R.layout.simple_spinner_item, secondaryLanguages
         )
-        secondarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        secondarySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.secondarySpinner.adapter = secondarySpinnerAdapter
         binding.secondarySpinner.setSelection(secondarySpinnerAdapter.getPosition(Language("en")))
 
 
         primarySpinnerAdapter = ArrayAdapter(
             requireContext(),
-            R.layout.simple_spinner_item, primaryLanguages
+            android.R.layout.simple_spinner_item, primaryLanguages
         )
-        primarySpinnerAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        primarySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.primarySpinner.adapter = primarySpinnerAdapter
         binding.primarySpinner.setSelection(0)
 

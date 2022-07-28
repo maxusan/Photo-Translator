@@ -1,4 +1,4 @@
-package com.batit.phototranslator.core.db
+package com.chkmx.phototranslator.core.db
 
 import android.content.Context
 import androidx.room.Database

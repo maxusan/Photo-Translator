@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.chkmx.phototranslator.ui.start
 
 import android.app.Activity
 import android.content.Intent
@@ -17,11 +17,11 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.util.SaveManager
-import com.batit.phototranslator.core.util.getImageFromUri
-import com.batit.phototranslator.core.view.TranslateView
-import com.batit.phototranslator.databinding.FragmentTranslateBinding
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.util.SaveManager
+import com.chkmx.phototranslator.core.util.getImageFromUri
+import com.chkmx.phototranslator.core.view.TranslateView
+import com.chkmx.phototranslator.databinding.FragmentTranslateBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.yalantis.ucrop.UCrop

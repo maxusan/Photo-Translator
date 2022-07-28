@@ -15,12 +15,12 @@
  *
  */
 
-package com.batit.phototranslator.core.data
+package com.chkmx.phototranslator.core.data
 
 import androidx.annotation.DrawableRes
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
-import com.batit.phototranslator.BR
+import com.chkmx.phototranslator.BR
 import java.io.Serializable
 import java.util.*
 

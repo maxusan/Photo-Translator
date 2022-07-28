@@ -1,6 +1,6 @@
-package com.batit.phototranslator.core.data
+package com.chkmx.phototranslator.core.data
 
-import com.batit.phototranslator.R
+import com.chkmx.phototranslator.R
 import com.google.mlkit.nl.translate.TranslateLanguage
 
 object LanguageProvider {

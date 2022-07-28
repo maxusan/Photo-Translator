@@ -15,7 +15,7 @@
  *
  */
 
-package com.batit.phototranslator.core.util
+package com.chkmx.phototranslator.core.util
 
 /**
  * Holds a result or some operation or the exception.

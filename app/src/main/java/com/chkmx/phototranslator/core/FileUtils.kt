@@ -1,4 +1,4 @@
-package com.batit.phototranslator.core
+package com.chkmx.phototranslator.core
 
 import android.content.ContentUris
 import android.content.Context

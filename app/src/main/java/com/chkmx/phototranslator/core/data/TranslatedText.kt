@@ -1,7 +1,6 @@
-package com.batit.phototranslator.core.data
+package com.chkmx.phototranslator.core.data
 
 import android.graphics.Rect
-import android.graphics.RectF
 import java.util.*
 
 data class TranslatedText(

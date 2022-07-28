@@ -1,12 +1,11 @@
-package com.batit.phototranslator.core.view
+package com.chkmx.phototranslator.core.view
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import androidx.appcompat.widget.AppCompatImageView
-import com.batit.phototranslator.core.data.TranslatedText
+import com.chkmx.phototranslator.core.data.TranslatedText
 
 class TranslateView(context: Context, attributeSet: AttributeSet) :
     AppCompatImageView(context, attributeSet) {

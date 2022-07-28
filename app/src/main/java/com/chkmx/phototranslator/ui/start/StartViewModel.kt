@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.chkmx.phototranslator.ui.start
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -8,10 +8,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.data.LanguageProvider
-import com.batit.phototranslator.core.data.TranslatedText
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.data.LanguageProvider
+import com.chkmx.phototranslator.core.data.TranslatedText
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.auth.oauth2.GoogleCredentials

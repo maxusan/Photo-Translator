@@ -1,4 +1,4 @@
-package com.batit.phototranslator.core.util
+package com.chkmx.phototranslator.core.util
 
 import android.app.Activity
 import android.content.*
@@ -16,8 +16,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.db.PhotoItem
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.db.PhotoItem
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition

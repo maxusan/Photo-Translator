@@ -5,19 +5,19 @@
 
     <data>
 
-        <import type="com.batit.phototranslator.ui.start.LanguageState" />
+        <import type="com.chkmx.phototranslator.ui.start.LanguageState" />
 
         <variable
             name="mode"
-            type="com.batit.phototranslator.ui.start.LanguageState" />
+            type="com.chkmx.phototranslator.ui.start.LanguageState" />
 
         <variable
             name="primary"
-            type="com.batit.phototranslator.core.data.Language" />
+            type="com.chkmx.phototranslator.core.data.Language" />
 
         <variable
             name="secondary"
-            type="com.batit.phototranslator.core.data.Language" />
+            type="com.chkmx.phototranslator.core.data.Language" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

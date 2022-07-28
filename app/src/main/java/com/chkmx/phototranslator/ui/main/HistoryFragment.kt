@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.main
+package com.chkmx.phototranslator.ui.main
 
 import android.net.Uri
 import android.os.Bundle
@@ -10,10 +10,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.db.PhotoItem
-import com.batit.phototranslator.databinding.FragmentHistoryBinding
-import com.batit.phototranslator.ui.MainViewModel
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.db.PhotoItem
+import com.chkmx.phototranslator.databinding.FragmentHistoryBinding
+import com.chkmx.phototranslator.ui.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

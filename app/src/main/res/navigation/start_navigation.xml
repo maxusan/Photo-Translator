@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.batit.phototranslator.ui.start.CameraFragment"
+        android:name="com.chkmx.phototranslator.ui.start.CameraFragment"
         android:label="CameraFragment"
         tools:layout="@layout/fragment_camera">
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/translateFragment"
-        android:name="com.batit.phototranslator.ui.start.TranslateFragment"
+        android:name="com.chkmx.phototranslator.ui.start.TranslateFragment"
         android:label="TranslateFragment"
         tools:layout="@layout/fragment_translate" >
         <argument
@@ -28,7 +28,7 @@
     </fragment>
     <fragment
         android:id="@+id/pickLanguageFragment"
-        android:name="com.batit.phototranslator.ui.start.PickLanguageFragment"
+        android:name="com.chkmx.phototranslator.ui.start.PickLanguageFragment"
         android:label="PickLanguageFragment"
         tools:layout="@layout/fragment_pick_language"/>
 

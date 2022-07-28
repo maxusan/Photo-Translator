@@ -1,4 +1,4 @@
-package com.batit.phototranslator.core.util
+package com.chkmx.phototranslator.core.util
 
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean

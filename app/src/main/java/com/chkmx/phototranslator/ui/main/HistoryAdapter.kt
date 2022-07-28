@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.main
+package com.chkmx.phototranslator.ui.main
 
 import android.app.AlertDialog
 import android.content.Context
@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.db.PhotoItem
-import com.batit.phototranslator.databinding.ListItemPhotoBinding
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.db.PhotoItem
+import com.chkmx.phototranslator.databinding.ListItemPhotoBinding
 
 
 class HistoryAdapter(var photoClicker: PhotoClicker) : ListAdapter<PhotoItem, HistoryAdapter.HistoryPhotoHolder>(PhotoCallback()) {

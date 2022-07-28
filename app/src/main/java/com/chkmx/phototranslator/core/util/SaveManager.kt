@@ -1,4 +1,4 @@
-package com.batit.phototranslator.core.util
+package com.chkmx.phototranslator.core.util
 
 import android.content.ContentValues
 import android.content.Context
@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import java.io.File
 import java.io.FileOutputStream

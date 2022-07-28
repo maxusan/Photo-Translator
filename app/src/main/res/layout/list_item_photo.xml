@@ -6,7 +6,7 @@
     <data>
         <variable
             name="photo"
-            type="com.batit.phototranslator.core.db.PhotoItem" />
+            type="com.chkmx.phototranslator.core.db.PhotoItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

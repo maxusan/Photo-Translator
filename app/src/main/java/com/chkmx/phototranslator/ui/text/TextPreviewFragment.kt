@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.text
+package com.chkmx.phototranslator.ui.text
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,10 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.util.copyTextToClipboard
-import com.batit.phototranslator.core.util.shareText
-import com.batit.phototranslator.databinding.FragmentTextPreviewBinding
+import com.chkmx.phototranslator.core.util.copyTextToClipboard
+import com.chkmx.phototranslator.core.util.shareText
+import com.chkmx.phototranslator.databinding.FragmentTextPreviewBinding
 
 
 class TextPreviewFragment : Fragment() {

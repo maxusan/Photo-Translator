@@ -1,11 +1,11 @@
-package com.batit.phototranslator.core.db
+package com.chkmx.phototranslator.core.db
 
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.batit.phototranslator.BR
+import com.chkmx.phototranslator.BR
 import java.util.*
 
 @Entity

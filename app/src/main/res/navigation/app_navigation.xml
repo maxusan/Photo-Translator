@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/home"
-        android:name="com.batit.phototranslator.ui.main.MainFragment"
+        android:name="com.chkmx.phototranslator.ui.main.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main">
         <action
@@ -19,7 +19,7 @@
     </fragment>
     <fragment
         android:id="@+id/history"
-        android:name="com.batit.phototranslator.ui.main.HistoryFragment"
+        android:name="com.chkmx.phototranslator.ui.main.HistoryFragment"
         android:label="fragment_history"
         tools:layout="@layout/fragment_history">
         <action
@@ -28,7 +28,7 @@
     </fragment>
     <fragment
         android:id="@+id/translateTextFragment"
-        android:name="com.batit.phototranslator.ui.text.TranslateTextFragment"
+        android:name="com.chkmx.phototranslator.ui.text.TranslateTextFragment"
         android:label="fragment_translate_text"
         tools:layout="@layout/fragment_translate_text">
         <action
@@ -41,7 +41,7 @@
     </fragment>
     <fragment
         android:id="@+id/textPreviewFragment"
-        android:name="com.batit.phototranslator.ui.text.TextPreviewFragment"
+        android:name="com.chkmx.phototranslator.ui.text.TextPreviewFragment"
         android:label="TextPreviewFragment"
         tools:layout="@layout/fragment_text_preview">
         <argument
@@ -50,7 +50,7 @@
     </fragment>
     <fragment
         android:id="@+id/translateFragment2"
-        android:name="com.batit.phototranslator.ui.main.MainTranslateFragment"
+        android:name="com.chkmx.phototranslator.ui.main.MainTranslateFragment"
         android:label="TranslateFragment"
         tools:layout="@layout/fragment_translate">
 
@@ -63,7 +63,7 @@
     </fragment>
     <fragment
         android:id="@+id/pickLanguageFragment2"
-        android:name="com.batit.phototranslator.ui.main.MainPickLanguageFragment"
+        android:name="com.chkmx.phototranslator.ui.main.MainPickLanguageFragment"
         android:label="PickLanguageFragment"
         tools:layout="@layout/fragment_pick_language" />
 

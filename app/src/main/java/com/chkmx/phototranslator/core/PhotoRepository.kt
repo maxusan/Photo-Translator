@@ -1,7 +1,7 @@
-package com.batit.phototranslator.core
+package com.chkmx.phototranslator.core
 
-import com.batit.phototranslator.core.db.PhotoItem
-import com.batit.phototranslator.core.db.TranslatorDatabase
+import com.chkmx.phototranslator.core.db.PhotoItem
+import com.chkmx.phototranslator.core.db.TranslatorDatabase
 
 object PhotoRepository {
 

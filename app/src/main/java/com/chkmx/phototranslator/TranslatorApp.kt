@@ -1,7 +1,7 @@
-package com.batit.phototranslator
+package com.chkmx.phototranslator
 
 import android.app.Application
-import com.batit.phototranslator.core.db.TranslatorDatabase
+import com.chkmx.phototranslator.core.db.TranslatorDatabase
 
 class TranslatorApp: Application() {
 

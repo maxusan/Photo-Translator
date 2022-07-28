@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.chkmx.phototranslator.ui.start
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,9 +6,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.databinding.ListItemLanguageBinding
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.databinding.ListItemLanguageBinding
 
 class LanguageListAdapter: ListAdapter<Language, LanguageListAdapter.LanguageHolder>(LanguageCallback()) {
 

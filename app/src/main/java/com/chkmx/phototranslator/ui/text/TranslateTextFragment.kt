@@ -1,11 +1,10 @@
-package com.batit.phototranslator.ui.text
+package com.chkmx.phototranslator.ui.text
 
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,14 +15,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.util.copyTextToClipboard
-import com.batit.phototranslator.core.util.hideKeyboard
-import com.batit.phototranslator.core.util.shareText
-import com.batit.phototranslator.core.util.showSoftKeyboard
-import com.batit.phototranslator.databinding.FragmentTranslateTextBinding
-import com.batit.phototranslator.ui.MainViewModel
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.util.copyTextToClipboard
+import com.chkmx.phototranslator.core.util.hideKeyboard
+import com.chkmx.phototranslator.core.util.shareText
+import com.chkmx.phototranslator.core.util.showSoftKeyboard
+import com.chkmx.phototranslator.databinding.FragmentTranslateTextBinding
+import com.chkmx.phototranslator.ui.MainViewModel
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.translate.Translate
 import com.google.cloud.translate.TranslateOptions

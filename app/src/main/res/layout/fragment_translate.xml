@@ -65,7 +65,7 @@
 
         </LinearLayout>
 
-        <com.batit.phototranslator.core.view.TranslateView
+        <com.chkmx.phototranslator.core.view.TranslateView
             android:id="@+id/translate_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"

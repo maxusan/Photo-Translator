@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.main
+package com.chkmx.phototranslator.ui.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.data.LanguageProvider
-import com.batit.phototranslator.databinding.FragmentPickLanguageBinding
-import com.batit.phototranslator.ui.MainViewModel
-import com.batit.phototranslator.ui.start.LanguageListAdapter
-import com.batit.phototranslator.ui.start.LanguageState
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.data.LanguageProvider
+import com.chkmx.phototranslator.databinding.FragmentPickLanguageBinding
+import com.chkmx.phototranslator.ui.MainViewModel
+import com.chkmx.phototranslator.ui.start.LanguageListAdapter
+import com.chkmx.phototranslator.ui.start.LanguageState
 
 class MainPickLanguageFragment: Fragment() {
 

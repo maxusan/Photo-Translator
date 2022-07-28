@@ -1,4 +1,4 @@
-package com.batit.phototranslator.ui.start
+package com.chkmx.phototranslator.ui.start
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -6,9 +6,9 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.NavHostFragment
-import com.batit.phototranslator.R
-import com.batit.phototranslator.databinding.ActivityStartBinding
-import com.batit.phototranslator.ui.main.MainActivity
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.databinding.ActivityStartBinding
+import com.chkmx.phototranslator.ui.main.MainActivity
 import java.util.concurrent.ExecutorService
 
 class StartActivity : AppCompatActivity() {

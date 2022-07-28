@@ -1,8 +1,7 @@
-package com.batit.phototranslator.ui.main
+package com.chkmx.phototranslator.ui.main
 
 import android.os.Bundle
 import android.view.Gravity
-import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -11,14 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
 import androidx.navigation.ui.setupWithNavController
-import com.batit.phototranslator.BuildConfig
-import com.batit.phototranslator.R
-import com.batit.phototranslator.core.data.Language
-import com.batit.phototranslator.core.data.LanguageProvider
-import com.batit.phototranslator.core.util.openLink
-import com.batit.phototranslator.databinding.ActivityMainBinding
-import com.batit.phototranslator.ui.MainViewModel
-import com.google.android.material.navigation.NavigationView
+import com.chkmx.phototranslator.BuildConfig
+import com.chkmx.phototranslator.R
+import com.chkmx.phototranslator.core.data.Language
+import com.chkmx.phototranslator.core.util.openLink
+import com.chkmx.phototranslator.databinding.ActivityMainBinding
+import com.chkmx.phototranslator.ui.MainViewModel
 
 class MainActivity : AppCompatActivity() {
 
